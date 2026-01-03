@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
 
 jobs:
   build-windows:
@@ -27,15 +27,11 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      # 🔥 MUST be first native dependency
-      - name: Install VC Runtime
-        run: choco install vcredist140 -y
-
       - name: Clear pip cache
         run: pip cache purge
 
-      - name: Install PyQt6
-        run: pip install --no-cache-dir PyQt6==6.5.2
+      - name: Install dependencies
+        run: pip install -r requirements.txt pypore3d --index-url https://test.pypi.org/simple/
       
       - name: Debug Dependencies
         run: |
@@ -45,19 +41,6 @@ jobs:
 
       - name: Verify PyQt6
         run: python -c "from PyQt6.QtWidgets import QApplication; from PyQt6.QtCore import QT_VERSION_STR; print('Qt OK:', QT_VERSION_STR)"
-
-      - name: Install visualization deps
-        run: pip install pyvista==0.42.3 pyvistaqt==0.11.0 vtk==9.2.6
-
-      - name: Install PyInstaller
-        run: pip install pyinstaller==6.3.0
-
-      - name: Install dependencies
-        run: pip install numpy Pillow psutil python-dotenv pydantic google-generativeai newrelic-telemetry-sdk
-
-      - name: Install pypore3d (optional)
-        run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
-        continue-on-error: true
 
       - name: Build CubeLab
         run: pyinstaller --clean --noconfirm --workpath build/cubelab --distpath dist/CubeLab cubelab.spec
