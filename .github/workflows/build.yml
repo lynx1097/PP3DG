@@ -28,8 +28,24 @@ jobs:
         run: python -m pip install --upgrade pip
 
       # ✅ Install ONLY PyQt6 (let it control Qt & sip ABI)
+      - name: Clear pip cache
+        run: pip cache purge
+
       - name: Install PyQt6
-        run: pip install PyQt6==6.5.2
+        run: pip install --no-cache-dir PyQt6==6.5.2
+
+      - name: Debug Qt DLL resolution
+        run: |
+          python -c "import PyQt6.QtCore as c; print(c.__file__)"
+          python -c "from PyQt6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath))"
+
+
+      - name: Verify PyQt6
+        run: python -c "import os; os.environ.pop('QT_PLUGIN_PATH', None); os.environ.pop('QT_QPA_PLATFORM_PLUGIN_PATH', None); from PyQt6.QtWidgets import QApplication; from PyQt6.QtCore import QT_VERSION_STR; print('Qt OK:', QT_VERSION_STR)"
+
+      - name: Install visualization deps
+        run: pip install pyvista==0.42.3 pyvistaqt==0.11.0 vtk==9.2.6
+
 
       - name: Install PyInstaller
         run: pip install pyinstaller==6.3.0
@@ -37,7 +53,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install numpy Pillow psutil python-dotenv pydantic
-          pip install pyvista pyvistaqt vtk
           pip install google-generativeai newrelic-telemetry-sdk
 
       - name: Install pypore3d (optional)
@@ -45,10 +60,7 @@ jobs:
           pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
         continue-on-error: true
 
-      # ✅ Verify Qt BEFORE freezing
-      - name: Verify PyQt6
-        run: python -c "from PyQt6.QtWidgets import QApplication; from PyQt6.QtCore import QT_VERSION_STR; print('Qt OK:', QT_VERSION_STR)"
-
+     
 
       # ✅ VC++ runtime for end users
       - name: Install VC Runtime
