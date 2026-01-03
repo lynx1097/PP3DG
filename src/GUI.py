@@ -1,4 +1,4 @@
-import sys 
+import sys ,os
 import json
 import IDE as code
 import VoxelRenderer as vis
@@ -11,6 +11,14 @@ from PyQt6.QtGui import QFont  , QPixmap , QIcon , QMovie
 from PyQt6.QtCore import Qt , QTimer , QSize
 from pathlib import Path
 import tempfile
+
+# Fix for frozen app finding Qt plugins
+if getattr(sys, 'frozen', False):
+    os.environ['QT_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins')
+    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins', 'platforms')
+
+# Set Qt API for pyvista/pyvistaqt compatibility
+os.environ['QT_API'] = 'pyqt6'
 
 # Define path to visual context
 CONTEXT_FILE = Path(__file__).parent.parent / 'visual_context.json'
