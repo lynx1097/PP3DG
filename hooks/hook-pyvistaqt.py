@@ -21,10 +21,11 @@ try:
 except Exception:
     pass
 
+# Use collect_all which returns properly formatted tuples
 try:
     pvqt_datas, pvqt_binaries, pvqt_hiddenimports = collect_all('pyvistaqt')
-    datas.extend(pvqt_datas)
-    binaries.extend(pvqt_binaries)
+    datas = pvqt_datas
+    binaries = pvqt_binaries
     hiddenimports.extend(pvqt_hiddenimports)
 except Exception:
     pass

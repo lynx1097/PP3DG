@@ -4,9 +4,9 @@ PyInstaller hook for VTK/vtkmodules
 Complete collection of VTK modules for 3D rendering.
 """
 
-from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
-# Collect everything from vtkmodules
+# Initialize
 hiddenimports = []
 datas = []
 binaries = []
@@ -19,9 +19,6 @@ VTK_MODULES = [
     'vtkmodules.util.numpy_support',
     'vtkmodules.util.vtkAlgorithm',
     'vtkmodules.util.vtkConstants',
-    'vtkmodules.util.vtkImageExportToArray',
-    'vtkmodules.util.vtkImageImportFromArray',
-    'vtkmodules.util.vtkMethodParser',
     'vtkmodules.util.misc',
     'vtkmodules.numpy_interface',
     'vtkmodules.numpy_interface.dataset_adapter',
@@ -69,11 +66,11 @@ try:
 except Exception as e:
     print(f"VTK submodule collection warning: {e}")
 
-# Collect all data and binaries
+# Collect all data and binaries using collect_all (returns proper format)
 try:
     vtk_datas, vtk_binaries, vtk_hiddenimports = collect_all('vtkmodules')
-    datas.extend(vtk_datas)
-    binaries.extend(vtk_binaries)
+    datas = vtk_datas
+    binaries = vtk_binaries
     hiddenimports.extend(vtk_hiddenimports)
 except Exception as e:
     print(f"VTK collect_all warning: {e}")

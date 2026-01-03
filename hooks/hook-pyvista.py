@@ -20,10 +20,11 @@ try:
 except Exception:
     pass
 
+# Use collect_all which returns properly formatted tuples
 try:
     pv_datas, pv_binaries, pv_hiddenimports = collect_all('pyvista')
-    datas.extend(pv_datas)
-    binaries.extend(pv_binaries)
+    datas = pv_datas
+    binaries = pv_binaries
     hiddenimports.extend(pv_hiddenimports)
 except Exception:
     pass
