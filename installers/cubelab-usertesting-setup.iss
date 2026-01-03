@@ -19,10 +19,16 @@ AppPublisherURL={#MyAppURL}
 DefaultDirName={autopf}\CubeLab-UserTesting
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=installers
+
+; Output
+; Saved relative to this script (in the installers folder)
+OutputDir=.
 OutputBaseFilename=CubeLab-UserTesting-{#MyAppVersion}-Windows-Setup
-;SetupIconFile=src\resources\images\Icon.ico
+
+; Resources
+SetupIconFile=..\src\resources\images\Icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
+
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -38,7 +44,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "dist\CubeLab-UserTesting\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Main application files - Steps up one directory to find dist
+Source: "..\dist\CubeLab-UserTesting\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

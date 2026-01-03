@@ -29,10 +29,15 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 
 ; Output
-OutputDir=installers
+; Saved relative to this script (in the installers folder)
+OutputDir=.
 OutputBaseFilename=CubeLab-{#MyAppVersion}-Windows-Setup
-;SetupIconFile=src\resources\images\Icon.ico
+
+; Resources
+SetupIconFile=..\src\resources\images\Icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
+WizardImageFile=..\src\resources\images\Splash.jpg
+; WizardSmallImageFile=..\src\resources\images\Icon.bmp
 
 ; Compression
 Compression=lzma2/ultra64
@@ -42,8 +47,6 @@ LZMANumBlockThreads=4
 
 ; Appearance
 WizardStyle=modern
-WizardImageFile=src\resources\images\Splash.bmp
-WizardSmallImageFile=src\resources\images\Icon.bmp
 
 ; Privileges
 PrivilegesRequired=lowest
@@ -61,10 +64,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-; Main application files
-Source: "dist\CubeLab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+; Main application files - Steps up one directory to find dist
+Source: "..\dist\CubeLab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
