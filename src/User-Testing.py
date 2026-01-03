@@ -1,12 +1,44 @@
-import os
 import sys
+import os
 
-if getattr(sys, 'frozen', False):
-    os.environ['QT_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins')
-    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins', 'platforms')
+# ============================================
+# CRITICAL: Set up paths BEFORE any Qt imports
+# ============================================
+def setup_frozen_environment():
+    """Configure environment for PyInstaller frozen app."""
+    if getattr(sys, 'frozen', False):
+        # Get the bundle directory
+        bundle_dir = sys._MEIPASS
+        
+        # Set Qt plugin paths
+        qt_plugins = os.path.join(bundle_dir, 'PyQt6', 'Qt6', 'plugins')
+        qt_platforms = os.path.join(qt_plugins, 'platforms')
+        
+        # Try alternate locations if default doesn't exist
+        if not os.path.exists(qt_plugins):
+            qt_plugins = os.path.join(bundle_dir, 'qt6_plugins')
+        if not os.path.exists(qt_platforms):
+            qt_platforms = os.path.join(bundle_dir, 'platforms')
+        
+        # Set environment variables
+        os.environ['QT_PLUGIN_PATH'] = qt_plugins
+        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = qt_platforms
+        
+        # Add DLL directories on Windows
+        if sys.platform == 'win32':
+            os.environ['PATH'] = bundle_dir + os.pathsep + os.environ.get('PATH', '')
+            if hasattr(os, 'add_dll_directory'):
+                os.add_dll_directory(bundle_dir)
+                qt_bin = os.path.join(bundle_dir, 'PyQt6', 'Qt6', 'bin')
+                if os.path.exists(qt_bin):
+                    os.add_dll_directory(qt_bin)
+
+# Call setup BEFORE importing PyQt6
+setup_frozen_environment()
 
 os.environ['QT_API'] = 'pyqt6'
 
+# Now import everything else
 import json
 import time
 import datetime
@@ -26,9 +58,6 @@ from PyQt6.QtGui import QColor, QPalette, QPainter, QPen, QBrush, QIcon
 # IMPORT YOUR EXISTING MODULES
 import GUI
 import DiagnosticModule as diag
-
-
-
 
 
 # --- CONFIGURATION WITH STEPS ---
@@ -187,12 +216,12 @@ class TaskWidget(QFrame):
         h_layout = QHBoxLayout(header)
         h_layout.setContentsMargins(0,0,0,0)
         
-        self.btn_expand = QPushButton("â–¶")
+        self.btn_expand = QPushButton("▶")
         self.btn_expand.setFixedSize(20, 20)
         self.btn_expand.setStyleSheet("border: none; color: #aaa; font-size: 10px;")
         self.btn_expand.clicked.connect(self.toggle_details)
         
-        self.lbl_status = QLabel("â¬œ") 
+        self.lbl_status = QLabel("⬜") 
         self.lbl_name = QLabel(f"<b>{task_data['id']}</b>: {task_data['name']}")
         self.lbl_name.setStyleSheet("color: white;")
         
@@ -225,7 +254,7 @@ class TaskWidget(QFrame):
     def toggle_details(self):
         self.details_visible = not self.details_visible
         self.details_frame.setVisible(self.details_visible)
-        self.btn_expand.setText("â–¼" if self.details_visible else "â–¶")
+        self.btn_expand.setText("▼" if self.details_visible else "▶")
 
     def toggle_task(self):
         if self.is_completed: return
@@ -242,7 +271,7 @@ class TaskWidget(QFrame):
         self.start_time = time.time()
         self.btn_action.setText("Stop")
         self.btn_action.setStyleSheet("background-color: #d32f2f; color: white;")
-        self.lbl_status.setText("â³") 
+        self.lbl_status.setText("⏳") 
         # Auto expand details when started
         if not self.details_visible: self.toggle_details()
 
@@ -252,7 +281,7 @@ class TaskWidget(QFrame):
         self.btn_action.setText("Done")
         self.btn_action.setEnabled(False)
         self.btn_action.setStyleSheet("background-color: #388e3c; color: white;")
-        self.lbl_status.setText("âœ…")
+        self.lbl_status.setText("✅")
         # Auto collapse when done
         if self.details_visible: self.toggle_details()
         
@@ -286,7 +315,7 @@ class TaskOverlay(QWidget):
         
         # Header
         header = QHBoxLayout()
-        lbl = QLabel("ðŸ“‹ Usability Tasks")
+        lbl = QLabel("📋 Usability Tasks")
         lbl.setStyleSheet("font-weight: bold; font-size: 14px; background: transparent; border: none;")
         self.btn_min = QPushButton("-")
         self.btn_min.setFixedSize(20,20)
@@ -349,7 +378,7 @@ class TaskOverlay(QWidget):
                 prev.is_active = False 
                 prev.btn_action.setText("Start")
                 prev.btn_action.setStyleSheet("background-color: #007acc; color: white;")
-                prev.lbl_status.setText("â¬œ")
+                prev.lbl_status.setText("⬜")
                 
         self.current_active_id = task_id
         logger.log_system_event(f"Task Started: {task_id}")

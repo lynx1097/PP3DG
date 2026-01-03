@@ -1,6 +1,5 @@
 ; =====================================================
-; CubeLab-UserTesting - Inno Setup Script
-; Creates a Windows installer (.exe)
+; CubeLab-UserTesting - Inno Setup Script (FIXED)
 ; =====================================================
 
 #define MyAppName "Cube Lab - User Testing"
@@ -20,20 +19,24 @@ DefaultDirName={autopf}\CubeLab-UserTesting
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 
-; Output
-; Saved relative to this script (in the installers folder)
+; Output - current directory
 OutputDir=.
 OutputBaseFilename=CubeLab-UserTesting-{#MyAppVersion}-Windows-Setup
 
-; Resources
-SetupIconFile=..\src\resources\images\Icon.ico
-UninstallDisplayIcon={app}\{#MyAppExeName}
+; NO ICON LINES - prevents errors when icon doesn't exist
 
+; Compression
 Compression=lzma2/ultra64
 SolidCompression=yes
+
+; Appearance
 WizardStyle=modern
+
+; Privileges
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+
+; Architecture
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
@@ -44,7 +47,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-; Main application files - Steps up one directory to find dist
 Source: "..\dist\CubeLab-UserTesting\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]

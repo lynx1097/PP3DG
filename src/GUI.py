@@ -1,11 +1,44 @@
-import sys ,os
+import sys
+import os
 
-if getattr(sys, 'frozen', False):
-    os.environ['QT_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins')
-    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins', 'platforms')
+# ============================================
+# CRITICAL: Set up paths BEFORE any Qt imports
+# ============================================
+def setup_frozen_environment():
+    """Configure environment for PyInstaller frozen app."""
+    if getattr(sys, 'frozen', False):
+        # Get the bundle directory
+        bundle_dir = sys._MEIPASS
+        
+        # Set Qt plugin paths
+        qt_plugins = os.path.join(bundle_dir, 'PyQt6', 'Qt6', 'plugins')
+        qt_platforms = os.path.join(qt_plugins, 'platforms')
+        
+        # Try alternate locations if default doesn't exist
+        if not os.path.exists(qt_plugins):
+            qt_plugins = os.path.join(bundle_dir, 'qt6_plugins')
+        if not os.path.exists(qt_platforms):
+            qt_platforms = os.path.join(bundle_dir, 'platforms')
+        
+        # Set environment variables
+        os.environ['QT_PLUGIN_PATH'] = qt_plugins
+        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = qt_platforms
+        
+        # Add DLL directories on Windows
+        if sys.platform == 'win32':
+            os.environ['PATH'] = bundle_dir + os.pathsep + os.environ.get('PATH', '')
+            if hasattr(os, 'add_dll_directory'):
+                os.add_dll_directory(bundle_dir)
+                qt_bin = os.path.join(bundle_dir, 'PyQt6', 'Qt6', 'bin')
+                if os.path.exists(qt_bin):
+                    os.add_dll_directory(qt_bin)
+
+# Call setup BEFORE importing PyQt6
+setup_frozen_environment()
 
 os.environ['QT_API'] = 'pyqt6'
 
+# Now import everything else
 import json
 import IDE as code
 import VoxelRenderer as vis
@@ -13,16 +46,27 @@ from Client import GeminiWorker as gworker
 import DiagnosticModule as diag  
 import google.generativeai as ai
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QLabel , QTextBrowser , QSplashScreen, QMessageBox, QInputDialog
-from PyQt6.QtGui import QFont  , QPixmap , QIcon , QMovie
-from PyQt6.QtCore import Qt , QTimer , QSize
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QLabel, QTextBrowser, QSplashScreen, QMessageBox, QInputDialog
+from PyQt6.QtGui import QFont, QPixmap, QIcon, QMovie
+from PyQt6.QtCore import Qt, QTimer, QSize
 from pathlib import Path
 import tempfile
 
 
+def get_resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    if getattr(sys, 'frozen', False):
+        # Running in PyInstaller bundle
+        base_path = sys._MEIPASS
+    else:
+        # Running in normal Python environment
+        base_path = Path(__file__).parent.parent
+    return os.path.join(base_path, relative_path)
+
 
 # Define path to visual context
-CONTEXT_FILE = Path(__file__).parent.parent / 'visual_context.json'
+CONTEXT_FILE = Path(get_resource_path('visual_context.json'))
+
 
 class MainWindow(QMainWindow):
     
@@ -63,7 +107,6 @@ class MainWindow(QMainWindow):
         self.send_label = QLabel("CL Assistant ")
         self.send_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         
-        # CHANGED: Button Name and Logic
         self.btn_vision = QPushButton("Where Can I find...?")
         self.btn_vision.setCheckable(True)
         self.btn_vision.setStyleSheet("""
@@ -86,7 +129,8 @@ class MainWindow(QMainWindow):
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.hide()
         
-        self.movie = QMovie(str(Path(__file__).parent.parent / 'resources' / 'images' / 'loading.gif'))
+        loading_gif = get_resource_path(os.path.join('resources', 'images', 'loading.gif'))
+        self.movie = QMovie(loading_gif)
         self.movie.setScaledSize(QSize(40, 30)) 
         self.loading_label.setMovie(self.movie)
         
@@ -131,10 +175,6 @@ class MainWindow(QMainWindow):
         return None
 
     def get_relevant_ui_context(self, user_query):
-        """
-        Scans visual_context.json for workflows or elements matching the user's query keywords.
-        Returns a JSON string of ONLY the relevant parts to save token space.
-        """
         if not self.visual_context_data: return "{}"
         
         query_words = user_query.lower().split()
@@ -142,25 +182,20 @@ class MainWindow(QMainWindow):
         
         data = self.visual_context_data.get('visual_context', {})
         
-        # 1. Search Workflows
         workflows = data.get('workflows', {})
         for wf_key, wf_val in workflows.items():
-            # Check name or description
             text_to_search = (wf_val.get('name', '') + " " + wf_val.get('description', '')).lower()
             if any(w in text_to_search for w in query_words):
                 relevant_data['relevant_workflows'].append(wf_val)
         
-        # 2. Search UI Index (for specific buttons/tabs)
         ui_index = data.get('ui_element_index', {})
         for category, items in ui_index.items():
             if isinstance(items, list):
                 for item in items:
-                    # Check label or action
                     text_to_search = (str(item.get('label', '')) + " " + str(item.get('action', ''))).lower()
                     if any(w in text_to_search for w in query_words):
                         relevant_data['relevant_ui_elements'].append(item)
 
-        # If nothing found, return structure summary as fallback
         if not relevant_data['relevant_workflows'] and not relevant_data['relevant_ui_elements']:
             return json.dumps(data.get('application_structure', {}), indent=2)
             
@@ -208,18 +243,12 @@ class MainWindow(QMainWindow):
         self.movie.start()        
         self.response_display.clear()
         
-        # --- VISION PIPELINE ---
         if self.btn_vision.isChecked():
-            # 1. Grab Screenshot
             pixmap = self.grab()
             tmp_img = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
             pixmap.save(tmp_img.name)
             
-            # 2. Extract Relevant UI Hierarchy/Workflow
             ui_context_str = self.get_relevant_ui_context(user_text)
-            
-            # 3. Create Vision Worker (Pass context in prompt or ref_card logic)
-            # We append the context string to the user prompt for the model
             enhanced_prompt = f"{user_text}\n\n[Context from Application Registry]:\n{ui_context_str}"
             
             self.worker = gworker(enhanced_prompt, use_case="vision", image_path=tmp_img.name)
@@ -250,20 +279,22 @@ class MainWindow(QMainWindow):
     def clear_chat(self):
         self.response_display.clear()
     
+
 if __name__ == '__main__':
     diag.register_crash_handler()
 
     app = QApplication(sys.argv)
     
-    splash_pix = QPixmap(str(Path(__file__).parent.parent / 'resources' / 'images' / 'Splash.jpg'))
+    splash_path = get_resource_path(os.path.join('resources', 'images', 'Splash.jpg'))
+    splash_pix = QPixmap(splash_path)
     splash = QSplashScreen(splash_pix)
     splash.show()
     
     app.processEvents()
     
-    icon_path = Path(__file__).parent.parent / 'resources' / 'images' / 'Icon.ico'
-    if icon_path.exists():
-        app.setWindowIcon(QIcon(str(icon_path)))        
+    icon_path = get_resource_path(os.path.join('resources', 'images', 'Icon.ico'))
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))        
     
     font = QFont("Segoe UI", 10)
     app.setFont(font)

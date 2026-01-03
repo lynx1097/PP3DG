@@ -1,9 +1,11 @@
-# Cube Lab - Dependencies
-# =======================
+# Cube Lab - Pinned Dependencies
+# ================================
 
-# GUI Framework
-PyQt6>=6.5.0
-PyQt6-QScintilla>=2.14.0
+# PyQt6 - MUST use matching versions
+PyQt6==6.6.1
+PyQt6-Qt6==6.6.1
+PyQt6-sip==13.6.0
+PyQt6-QScintilla==2.14.1
 
 # 3D Visualization
 pyvista>=0.42.0
@@ -15,7 +17,7 @@ numpy>=1.24.0
 Pillow>=10.0.0
 
 # AI Integration
-google-genai>=0.4.0
+google-generativeai>=0.3.0
 pydantic>=2.0.0
 
 # Configuration & System
@@ -26,4 +28,4 @@ psutil>=5.9.0
 newrelic-telemetry-sdk>=0.5.0
 
 # Build Tools
-pyinstaller>=6.0.0
+pyinstaller==6.3.0

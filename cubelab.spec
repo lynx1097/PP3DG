@@ -1,8 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
+"""
+CubeLab - BULLETPROOF PyInstaller Spec
+======================================
+"""
+
 import sys
 import os
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_all, get_package_paths, collect_submodules
 
 APP_NAME = "CubeLab"
 ENTRY_SCRIPT = "GUI.py"
@@ -10,107 +14,156 @@ BASE_DIR = Path(SPECPATH)
 SRC_DIR = BASE_DIR / "src"
 
 # ============================================
-# Collect dependencies
+# STEP 1: Import PyInstaller hooks SAFELY
 # ============================================
-all_datas, all_binaries, all_hiddenimports = [], [], []
+from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_data_files
 
 # ============================================
-# FIX 1: Properly collect PyQt6 with all DLLs
+# STEP 2: Collect packages ONE BY ONE with error handling
+# ============================================
+all_datas = []
+all_binaries = []
+all_hiddenimports = []
+
+def safe_collect(package_name):
+    """Safely collect a package, return empty lists on failure."""
+    try:
+        datas, binaries, hiddenimports = collect_all(package_name)
+        print(f"[OK] Collected {package_name}: {len(datas)} datas, {len(binaries)} binaries")
+        return datas, binaries, hiddenimports
+    except Exception as e:
+        print(f"[SKIP] {package_name}: {e}")
+        return [], [], []
+
+# Collect VTK first (largest)
+d, b, h = safe_collect('vtkmodules')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
+
+# Collect PyVista
+d, b, h = safe_collect('pyvista')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
+
+# Collect pyvistaqt
+d, b, h = safe_collect('pyvistaqt')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
+
+# Collect pypore3d (may not exist)
+d, b, h = safe_collect('pypore3d')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
+
+# Collect pydantic
+d, b, h = safe_collect('pydantic')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
+
+# ============================================
+# STEP 3: Collect PyQt6 MANUALLY (most reliable)
 # ============================================
 try:
-    qt_path = get_package_paths('PyQt6')[1]
+    from PyInstaller.utils.hooks import get_package_paths
+    _, qt_path = get_package_paths('PyQt6')
     
-    # Collect Qt6 plugins
+    # Collect Qt6 plugins directory
     qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
-    if os.path.exists(qt_plugins):
-        all_datas.append((qt_plugins, 'PyQt6/Qt6/plugins'))
+    if os.path.isdir(qt_plugins):
+        all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
+        print(f"[OK] Added Qt6 plugins from {qt_plugins}")
     
-    # Collect Qt6 bin directory (contains core DLLs - CRITICAL FOR WINDOWS)
+    # Collect ALL DLLs from Qt6/bin
     qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
-    if os.path.exists(qt_bin):
-        for dll in os.listdir(qt_bin):
-            if dll.endswith('.dll'):
-                all_binaries.append((os.path.join(qt_bin, dll), '.'))
-    
-    # Collect Qt6 lib directory (some DLLs may be here too)
-    qt_lib = os.path.join(qt_path, 'Qt6', 'lib')
-    if os.path.exists(qt_lib):
-        for dll in os.listdir(qt_lib):
-            if dll.endswith('.dll'):
-                all_binaries.append((os.path.join(qt_lib, dll), '.'))
-                
+    if os.path.isdir(qt_bin):
+        for f in os.listdir(qt_bin):
+            if f.endswith('.dll'):
+                src = os.path.join(qt_bin, f)
+                all_binaries.append((src, '.'))
+        print(f"[OK] Added Qt6 DLLs from {qt_bin}")
+        
 except Exception as e:
-    print(f"Warning: Could not collect PyQt6 paths: {e}")
+    print(f"[WARN] PyQt6 manual collection failed: {e}")
+
+# Also use collect_all for PyQt6 as backup
+d, b, h = safe_collect('PyQt6')
+all_datas += d
+all_binaries += b
+all_hiddenimports += h
 
 # ============================================
-# FIX 2: Use collect_all for all packages including PyQt6
+# STEP 4: Define ALL hidden imports explicitly
 # ============================================
-packages = [
-    'PyQt6',           # Added PyQt6 to collect_all
-    'PyQt6.sip',       # Required for PyQt6
-    'vtkmodules',
-    'pyvista',
-    'pyvistaqt',
-    'pypore3d',
-    'pydantic',
-]
-
-for pkg in packages:
-    try:
-        d, b, h = collect_all(pkg)
-        all_datas += d
-        all_binaries += b
-        all_hiddenimports += h
-    except Exception as e:
-        print(f"Warning: {pkg} collection issue: {e}")
-
-# ============================================
-# FIX 3: Comprehensive hidden imports
-# ============================================
-hidden_imports = list(set([
-    # Your app modules
+hidden_imports = [
+    # Application modules
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     
-    # PyQt6 core modules
+    # PyQt6 - EVERY module
+    'PyQt6',
     'PyQt6.QtCore',
     'PyQt6.QtGui',
     'PyQt6.QtWidgets',
     'PyQt6.Qsci',
     'PyQt6.sip',
-    
-    # PyQt6 additional modules (often missing)
     'PyQt6.QtOpenGL',
     'PyQt6.QtOpenGLWidgets',
     'PyQt6.QtSvg',
-    'PyQt6.QtSvgWidgets',
     'PyQt6.QtNetwork',
     'PyQt6.QtPrintSupport',
     
-    # Other dependencies
+    # NumPy
     'numpy',
-    'PIL',
-    'PIL._tkinter_finder',
-    'google.genai',
-    'pypore3d',
-    'scipy.spatial.transform._rotation_groups',
+    'numpy.core',
+    'numpy.core._methods',
+    'numpy.core._dtype_ctypes',
+    'numpy.lib.format',
     
-    # VTK/PyVista related
+    # PIL
+    'PIL',
+    'PIL.Image',
+    
+    # Google
+    'google.generativeai',
+    'google.genai',
+    
+    # Pydantic
+    'pydantic',
+    'pydantic_core',
+    
+    # System
+    'psutil',
+    'dotenv',
+    'json',
+    'tempfile',
+    'pathlib',
+    
+    # Telemetry
+    'newrelic_telemetry_sdk',
+    
+    # pypore3d
+    'pypore3d',
+    'pypore3d.p3dFiltPy',
+    'pypore3d.p3dFiltPy_16',
+    'pypore3d.p3dBlobPy',
+    'pypore3d.p3dSkelPy',
+    
+    # VTK
+    'vtkmodules',
     'vtkmodules.all',
     'vtkmodules.util.numpy_support',
-    'vtkmodules.numpy_interface',
     'vtkmodules.qt.QVTKRenderWindowInteractor',
-] + all_hiddenimports))
+]
+
+# Add collected hiddenimports
+hidden_imports = list(set(hidden_imports + all_hiddenimports))
 
 # ============================================
-# FIX 4: Collect PyQt6 submodules explicitly
-# ============================================
-try:
-    hidden_imports += collect_submodules('PyQt6')
-except Exception:
-    pass
-
-# ============================================
-# Data files
+# STEP 5: Data files
 # ============================================
 datas = [
     (str(SRC_DIR / '.env'), '.'),
@@ -121,7 +174,7 @@ datas = [
 ] + all_datas
 
 # ============================================
-# Analysis
+# STEP 6: Analysis
 # ============================================
 a = Analysis(
     [str(SRC_DIR / ENTRY_SCRIPT)],
@@ -129,29 +182,42 @@ a = Analysis(
     binaries=all_binaries,
     datas=datas,
     hiddenimports=hidden_imports,
-    hookspath=['hooks'],
+    hookspath=[],
     hooksconfig={},
-    runtime_hooks=['hooks/rthook_pyqt6.py'],  # ← ADD THIS LINE
+    runtime_hooks=[],
     excludes=[
-        'tkinter',
+        'tkinter', '_tkinter',
         'matplotlib',
+        'scipy',
         'pandas',
-        'IPython',
-        'jupyter',
+        'IPython', 'jupyter', 'notebook',
         'pytest',
-        '_tkinter',
+        'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
     ],
     noarchive=False,
     optimize=0,
 )
 
 # ============================================
-# FIX 5: Remove duplicate binaries (can cause issues)
+# STEP 7: Remove duplicate binaries
 # ============================================
-seen = set()
-a.binaries = [x for x in a.binaries if not (x[0] in seen or seen.add(x[0]))]
+seen_binaries = set()
+unique_binaries = []
+for item in a.binaries:
+    name = item[0]
+    if name not in seen_binaries:
+        seen_binaries.add(name)
+        unique_binaries.append(item)
+a.binaries = unique_binaries
 
+# ============================================
+# STEP 8: Build
+# ============================================
 pyz = PYZ(a.pure, a.zipped_data)
+
+# Check if icon exists
+icon_path = SRC_DIR / 'resources' / 'images' / 'Icon.ico'
+exe_icon = str(icon_path) if icon_path.exists() else None
 
 exe = EXE(
     pyz,
@@ -162,14 +228,14 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,  # CRITICAL: Disable UPX
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=str(SRC_DIR / 'resources' / 'images' / 'Icon.ico'),
+    icon=exe_icon,
 )
 
 coll = COLLECT(
@@ -177,7 +243,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=False,  # CRITICAL: Disable UPX
+    upx=False,
     upx_exclude=[],
     name=APP_NAME,
 )
