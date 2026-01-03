@@ -42,8 +42,7 @@ jobs:
 
       - name: Install pypore3d (optional)
         run: |
-          pip install --index-url https://test.pypi.org/simple/ \
-            --extra-index-url https://pypi.org/simple/ pypore3d
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
         continue-on-error: true
 
       # ✅ Verify Qt BEFORE freezing
@@ -64,20 +63,14 @@ jobs:
       # =============================
       - name: Build CubeLab
         run: |
-          pyinstaller --clean --noconfirm \
-            --workpath build/cubelab \
-            --distpath dist/CubeLab \
-            cubelab.spec
+          pyinstaller --clean --noconfirm --workpath build/cubelab --distpath dist/CubeLab cubelab.spec
 
       # =============================
       # Build CubeLab UserTesting
       # =============================
       - name: Build CubeLab-UserTesting
         run: |
-          pyinstaller --clean --noconfirm \
-            --workpath build/usertesting \
-            --distpath dist/CubeLab-UserTesting \
-            cubelab-usertesting.spec
+          pyinstaller --clean --noconfirm --workpath build/usertesting -distpath dist/CubeLab-UserTesting cubelab-usertesting.spec
 
       - name: Verify outputs
         run: |
