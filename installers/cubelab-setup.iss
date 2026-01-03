@@ -36,7 +36,9 @@ OutputBaseFilename=CubeLab-{#MyAppVersion}-Windows-Setup
 ; Resources
 SetupIconFile=..\src\resources\images\Icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
-WizardImageFile=..\src\resources\images\Splash.jpg
+
+; Commented out to prevent "Invalid bitmap" error
+; WizardImageFile=..\src\resources\images\Splash.jpg
 ; WizardSmallImageFile=..\src\resources\images\Icon.bmp
 
 ; Compression

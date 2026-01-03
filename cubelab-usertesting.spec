@@ -27,7 +27,8 @@ all_datas = []
 all_binaries = []
 all_hiddenimports = []
 
-for pkg in ['vtkmodules', 'pyvista', 'pyvistaqt', 'pypore3d', 'pydantic']:
+# Added 'PyQt6' here to force collection of all Qt DLLs and plugins
+for pkg in ['PyQt6', 'vtkmodules', 'pyvista', 'pyvistaqt', 'pypore3d', 'pydantic']:
     try:
         d, b, h = collect_all(pkg)
         all_datas += d
@@ -80,7 +81,8 @@ a = Analysis(
     binaries=binaries,
     datas=datas,
     hiddenimports=hidden_imports,
-    hookspath=[],
+    # Pointed to your 'hooks' directory
+    hookspath=['hooks'],
     excludes=excludes,
     noarchive=False,
 )
