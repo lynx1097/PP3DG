@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.12'
 
 jobs:
   build-windows:
@@ -42,13 +42,40 @@ jobs:
         run: python -c "from PyQt6.QtWidgets import QApplication; from PyQt6.QtCore import QT_VERSION_STR; print('Qt OK:', QT_VERSION_STR)"
 
       - name: Build CubeLab
-        run: pyinstaller --clean --noconfirm --workpath build/cubelab --distpath dist/CubeLab cubelab.spec
+        run: pyinstaller --clean --noconfirm cubelab.spec
 
       - name: Build CubeLab-UserTesting
-        run: pyinstaller --clean --noconfirm --workpath build/usertesting --distpath dist/CubeLab-UserTesting cubelab-usertesting.spec
+        run: pyinstaller --clean --noconfirm cubelab-usertesting.spec
 
-      - name: Verify outputs
+      # Verify build output exists
+      - name: Verify build output
+        run: |
+          if (Test-Path "dist\CubeLab\CubeLab.exe") { Write-Host "CubeLab.exe exists" } else { Write-Error "CubeLab.exe missing!" }
+          if (Test-Path "dist\CubeLab-UserTesting\CubeLab-UserTesting.exe") { Write-Host "CubeLab-UserTesting.exe exists" } else { Write-Error "CubeLab-UserTesting.exe missing!" }
+        shell: pwsh
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Create Windows Installers
+        shell: cmd
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-setup.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
+        continue-on-error: true
+
+      # Always create ZIP as backup
+      - name: Create ZIP packages
         shell: pwsh
         run: |
-          Test-Path dist/CubeLab/CubeLab.exe
-          Test-Path dist/CubeLab-UserTesting/CubeLab-UserTesting.exe
+          Compress-Archive -Path "dist\CubeLab\*" -DestinationPath "installers\CubeLab-Windows.zip" -Force
+          Compress-Archive -Path "dist\CubeLab-UserTesting\*" -DestinationPath "installers\CubeLab-UserTesting-Windows.zip" -Force
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            installers/*.exe
+            installers/*.zip
+          retention-days: 30
