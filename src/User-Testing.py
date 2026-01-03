@@ -38,6 +38,10 @@ setup_frozen_environment()
 
 os.environ['QT_API'] = 'pyqt6'
 
+os.environ.pop("QT_PLUGIN_PATH", None)
+os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+
 # Now import everything else
 import json
 import time

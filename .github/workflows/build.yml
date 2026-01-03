@@ -14,7 +14,7 @@ env:
 jobs:
   build-windows:
     runs-on: windows-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,102 +24,75 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # CRITICAL: Install EXACT matching PyQt6 versions
-      # Using 6.5.x series which is most stable for PyInstaller
-      - name: Install PyQt6 (pinned versions)
-        run: |
-          python -m pip install --upgrade pip
-          pip install PyQt6==6.5.2 PyQt6-Qt6==6.5.2 PyQt6-sip==13.5.2 PyQt6-QScintilla==2.14.1
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      # ✅ Install ONLY PyQt6 (let it control Qt & sip ABI)
+      - name: Install PyQt6
+        run: pip install PyQt6==6.5.2
 
       - name: Install PyInstaller
         run: pip install pyinstaller==6.3.0
 
-      - name: Install other dependencies
+      - name: Install dependencies
         run: |
-          pip install pyvista pyvistaqt vtk numpy Pillow
-          pip install google-generativeai pydantic python-dotenv psutil
-          pip install newrelic-telemetry-sdk
+          pip install numpy Pillow psutil python-dotenv pydantic
+          pip install pyvista pyvistaqt vtk
+          pip install google-generativeai newrelic-telemetry-sdk
 
-      - name: Install pypore3d from TestPyPI
+      - name: Install pypore3d (optional)
         run: |
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
+          pip install --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ pypore3d
         continue-on-error: true
 
-      # Verify Qt is working
-      - name: Verify PyQt6 installation
+      # ✅ Verify Qt BEFORE freezing
+      - name: Verify PyQt6
         run: |
-          python -c "from PyQt6.QtWidgets import QApplication; print('PyQt6.QtWidgets OK')"
-          python -c "from PyQt6.QtCore import Qt; print('PyQt6.QtCore OK')"
-          python -c "from PyQt6.QtGui import QIcon; print('PyQt6.QtGui OK')"
-          python -c "import PyQt6; print(f'PyQt6 path: {PyQt6.__file__}')"
+          python - <<EOF
+          from PyQt6.QtWidgets import QApplication
+          from PyQt6.QtCore import QT_VERSION_STR
+          print("Qt OK:", QT_VERSION_STR)
+          EOF
 
-      # Print installed versions for debugging
-      - name: Print PyQt6 versions
-        run: |
-          pip show PyQt6 PyQt6-Qt6 PyQt6-sip | findstr "Name Version"
-        shell: cmd
+      # ✅ VC++ runtime for end users
+      - name: Install VC Runtime
+        run: choco install vcredist140 -y
 
+      # =============================
+      # Build CubeLab
+      # =============================
       - name: Build CubeLab
-        run: pyinstaller --clean --noconfirm cubelab.spec
+        run: |
+          pyinstaller --clean --noconfirm \
+            --workpath build/cubelab \
+            --distpath dist/CubeLab \
+            cubelab.spec
 
+      # =============================
+      # Build CubeLab UserTesting
+      # =============================
       - name: Build CubeLab-UserTesting
-        run: pyinstaller --clean --noconfirm cubelab-usertesting.spec
-
-      # Verify build output exists
-      - name: Verify build output
         run: |
-          if (Test-Path "dist\CubeLab\CubeLab.exe") { Write-Host "CubeLab.exe exists" } else { Write-Error "CubeLab.exe missing!" }
-          if (Test-Path "dist\CubeLab-UserTesting\CubeLab-UserTesting.exe") { Write-Host "CubeLab-UserTesting.exe exists" } else { Write-Error "CubeLab-UserTesting.exe missing!" }
+          pyinstaller --clean --noconfirm \
+            --workpath build/usertesting \
+            --distpath dist/CubeLab-UserTesting \
+            cubelab-usertesting.spec
+
+      - name: Verify outputs
+        run: |
+          Test-Path dist/CubeLab/CubeLab.exe
+          Test-Path dist/CubeLab-UserTesting/CubeLab-UserTesting.exe
         shell: pwsh
 
-      - name: Install Inno Setup
-        run: choco install innosetup -y
-
-      - name: Create Windows Installers
-        shell: cmd
-        run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-setup.iss
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
-        continue-on-error: true
-
-      # Always create ZIP as backup
-      - name: Create ZIP packages
+      - name: Zip artifacts
         shell: pwsh
         run: |
-          Compress-Archive -Path "dist\CubeLab\*" -DestinationPath "installers\CubeLab-Windows.zip" -Force
-          Compress-Archive -Path "dist\CubeLab-UserTesting\*" -DestinationPath "installers\CubeLab-UserTesting-Windows.zip" -Force
+          Compress-Archive dist/CubeLab/* installers/CubeLab-Windows.zip -Force
+          Compress-Archive dist/CubeLab-UserTesting/* installers/CubeLab-UserTesting-Windows.zip -Force
 
-      - name: Upload Windows Artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installers
-          path: |
-            installers/*.exe
-            installers/*.zip
-          retention-days: 30
-
-  release:
-    needs: [build-windows]
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-
-      - name: List artifacts
-        run: find artifacts/ -type f
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            artifacts/**/*.exe
-            artifacts/**/*.zip
-          draft: false
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
-          generate_release_notes: true
+          name: windows-build
+          path: installers/*.zip
