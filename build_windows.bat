@@ -34,15 +34,15 @@ echo [3/8] Upgrading pip...
 python -m pip install --upgrade pip --quiet
 
 echo [4/8] Installing dependencies...
-pip install -r requirements.txt --quiet
+pip install -r requirements.txt pypore3d --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/
 
-echo [5/8] Installing pypore3d from TestPyPI...
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
 if errorlevel 1 (
-    echo [WARNING] pypore3d installation had issues - continuing anyway
+    echo [ERROR] Failed to install dependencies
+    pause
+    exit /b 1
 )
 
-echo [6/8] Verifying imports...
+echo [5/8] Verifying imports...
 python -c "import PyQt6; import pyvista; import vtk; print('Core OK')"
 if errorlevel 1 (
     echo [ERROR] Core dependencies not working
@@ -55,7 +55,7 @@ if errorlevel 1 (
     echo [WARNING] pypore3d not available - image processing may not work
 )
 
-echo [7/8] Building executables with PyInstaller...
+echo [6/8] Building executables with PyInstaller...
 echo.
 echo        Building CubeLab...
 pyinstaller --clean --noconfirm cubelab.spec
@@ -73,7 +73,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [8/8] Creating Windows installers...
+echo [7/8] Creating Windows installers...
 
 REM Check for Inno Setup
 set ISCC_PATH=
