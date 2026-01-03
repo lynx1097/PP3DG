@@ -30,7 +30,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: $ env.PYTHON_VERSION 
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
       # FIX: Install Visual C++ Redistributable for Qt DLLs
@@ -109,5 +109,5 @@ jobs:
             artifacts/**/*.exe
             artifacts/**/*.zip
           draft: false
-          prerelease: $ contains(github.ref, '-alpha') || contains(github.ref, '-beta') 
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           generate_release_notes: true
