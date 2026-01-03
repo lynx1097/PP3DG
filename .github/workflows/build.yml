@@ -25,10 +25,11 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       # CRITICAL: Install EXACT matching PyQt6 versions
+      # Using 6.5.x series which is most stable for PyInstaller
       - name: Install PyQt6 (pinned versions)
         run: |
           python -m pip install --upgrade pip
-          pip install PyQt6==6.6.1 PyQt6-Qt6==6.6.1 PyQt6-sip==13.6.0 PyQt6-QScintilla==2.14.1
+          pip install PyQt6==6.5.2 PyQt6-Qt6==6.5.2 PyQt6-sip==13.5.2 PyQt6-QScintilla==2.14.1
 
       - name: Install PyInstaller
         run: pip install pyinstaller==6.3.0
@@ -50,6 +51,13 @@ jobs:
           python -c "from PyQt6.QtWidgets import QApplication; print('PyQt6.QtWidgets OK')"
           python -c "from PyQt6.QtCore import Qt; print('PyQt6.QtCore OK')"
           python -c "from PyQt6.QtGui import QIcon; print('PyQt6.QtGui OK')"
+          python -c "import PyQt6; print(f'PyQt6 path: {PyQt6.__file__}')"
+
+      # Print installed versions for debugging
+      - name: Print PyQt6 versions
+        run: |
+          pip show PyQt6 PyQt6-Qt6 PyQt6-sip | findstr "Name Version"
+        shell: cmd
 
       - name: Build CubeLab
         run: pyinstaller --clean --noconfirm cubelab.spec
