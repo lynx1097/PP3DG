@@ -1,0 +1,289 @@
+# =====================================================
+# Cube Lab - Automated Cross-Platform Build Pipeline
+# =====================================================
+# Creates standalone installers for Windows, macOS, Linux
+
+name: Build Installers
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # =====================================================
+  # WINDOWS BUILD
+  # =====================================================
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install pypore3d from TestPyPI
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
+        continue-on-error: true
+
+      - name: Build CubeLab
+        run: pyinstaller --clean --noconfirm cubelab.spec
+
+      - name: Build CubeLab-UserTesting
+        run: pyinstaller --clean --noconfirm cubelab-usertesting.spec
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup -y
+
+      - name: Create Windows Installers
+        shell: cmd
+        run: |
+          mkdir installers
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-setup.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
+        continue-on-error: true
+
+      - name: Fallback to ZIP
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path installers
+          Compress-Archive -Path "dist\CubeLab\*" -DestinationPath "installers\CubeLab-Windows.zip"
+          Compress-Archive -Path "dist\CubeLab-UserTesting\*" -DestinationPath "installers\CubeLab-UserTesting-Windows.zip"
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            installers/*.exe
+            installers/*.zip
+          retention-days: 30
+
+  # =====================================================
+  # macOS BUILD
+  # =====================================================
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install pypore3d from TestPyPI
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
+        continue-on-error: true
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Build CubeLab
+        run: pyinstaller --clean --noconfirm cubelab.spec
+
+      - name: Build CubeLab-UserTesting
+        run: pyinstaller --clean --noconfirm cubelab-usertesting.spec
+
+      - name: Create DMG Installers
+        run: |
+          mkdir -p installers
+          
+          # CubeLab DMG
+          if [ -d "dist/CubeLab.app" ]; then
+            hdiutil create -volname "Cube Lab" -srcfolder "dist/CubeLab.app" -ov -format UDZO "installers/CubeLab-macOS.dmg"
+          elif [ -d "dist/CubeLab" ]; then
+            hdiutil create -volname "Cube Lab" -srcfolder "dist/CubeLab" -ov -format UDZO "installers/CubeLab-macOS.dmg"
+          fi
+          
+          # CubeLab-UserTesting DMG
+          if [ -d "dist/CubeLab-UserTesting.app" ]; then
+            hdiutil create -volname "Cube Lab - User Testing" -srcfolder "dist/CubeLab-UserTesting.app" -ov -format UDZO "installers/CubeLab-UserTesting-macOS.dmg"
+          elif [ -d "dist/CubeLab-UserTesting" ]; then
+            hdiutil create -volname "Cube Lab - User Testing" -srcfolder "dist/CubeLab-UserTesting" -ov -format UDZO "installers/CubeLab-UserTesting-macOS.dmg"
+          fi
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: installers/*.dmg
+          retention-days: 30
+
+  # =====================================================
+  # LINUX BUILD
+  # =====================================================
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libxcb-xinerama0 \
+            libxkbcommon-x11-0 \
+            libegl1-mesa \
+            libxcb-cursor0 \
+            fuse \
+            libfuse2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install pypore3d from TestPyPI
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
+        continue-on-error: true
+
+      - name: Build CubeLab
+        run: pyinstaller --clean --noconfirm cubelab.spec
+
+      - name: Build CubeLab-UserTesting
+        run: pyinstaller --clean --noconfirm cubelab-usertesting.spec
+
+      - name: Download appimagetool
+        run: |
+          mkdir -p installers
+          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool
+          chmod +x appimagetool
+
+      - name: Create AppImages
+        run: |
+          # CubeLab AppImage
+          mkdir -p AppDir-CubeLab/usr/bin
+          cp -r dist/CubeLab/* AppDir-CubeLab/usr/bin/
+          
+          cat > AppDir-CubeLab/AppRun << 'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "$0")")"
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/bin:${LD_LIBRARY_PATH}"
+          exec "${HERE}/usr/bin/CubeLab" "$@"
+          EOF
+          chmod +x AppDir-CubeLab/AppRun
+          
+          cat > AppDir-CubeLab/cubelab.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Cube Lab
+          Exec=CubeLab
+          Icon=cubelab
+          Type=Application
+          Categories=Science;
+          EOF
+          
+          touch AppDir-CubeLab/cubelab.png
+          
+          ARCH=x86_64 ./appimagetool AppDir-CubeLab installers/CubeLab-x86_64.AppImage || {
+            cd dist && tar -czvf ../installers/CubeLab-Linux.tar.gz CubeLab/
+          }
+          
+          # CubeLab-UserTesting AppImage
+          mkdir -p AppDir-UserTesting/usr/bin
+          cp -r dist/CubeLab-UserTesting/* AppDir-UserTesting/usr/bin/
+          
+          cat > AppDir-UserTesting/AppRun << 'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "$0")")"
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/bin:${LD_LIBRARY_PATH}"
+          exec "${HERE}/usr/bin/CubeLab-UserTesting" "$@"
+          EOF
+          chmod +x AppDir-UserTesting/AppRun
+          
+          cat > AppDir-UserTesting/cubelab-usertesting.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Cube Lab - User Testing
+          Exec=CubeLab-UserTesting
+          Icon=cubelab-usertesting
+          Type=Application
+          Categories=Science;
+          EOF
+          
+          touch AppDir-UserTesting/cubelab-usertesting.png
+          
+          ARCH=x86_64 ./appimagetool AppDir-UserTesting installers/CubeLab-UserTesting-x86_64.AppImage || {
+            cd dist && tar -czvf ../installers/CubeLab-UserTesting-Linux.tar.gz CubeLab-UserTesting/
+          }
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installers
+          path: |
+            installers/*.AppImage
+            installers/*.tar.gz
+          retention-days: 30
+
+  # =====================================================
+  # RELEASE
+  # =====================================================
+  release:
+    needs: [build-windows, build-macos, build-linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: List files
+        run: find artifacts/ -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
+            artifacts/**/*.AppImage
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
+          draft: false
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          generate_release_notes: true

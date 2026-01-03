@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.egg-info/
+venv/
+.venv/
+
+# Build
+dist/
+build/
+*.spec.bak
+
+# Installers (generated)
+installers/*.exe
+installers/*.dmg
+installers/*.AppImage
+installers/*.tar.gz
+installers/*.zip
+appimagetool*
+AppDir*/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keep these
+!installers/*.iss

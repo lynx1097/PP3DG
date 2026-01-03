@@ -1,0 +1,4668 @@
+{
+  "pypore3d_function_reference": {
+    "metadata": {
+      "title": "Pypore3D Function Reference for PyQt6 UI",
+      "description": "Comprehensive function catalog for porous material analysis software",
+      "total_functions": 50,
+      "excluded_functions": 3,
+      "excluded_list": [
+        "py_p3d_IsolatedConnectedImageFilter",
+        "py_p3d_NeighborhoodConnectedImageFilter",
+        "py_p3d_ConnectedThresholdImageFilter"
+      ],
+      "target_audience": "Scientists analyzing porous materials (biologists, geologists, pharmacists, chemists)",
+      "notes": "All functions operate on UNSIGNED image data only. Signed format is not supported."
+    },
+    "ui_parsing_guide": {
+      "overview": "This JSON provides all necessary information to dynamically generate UI forms for each pypore3d function. Each function entry contains metadata for sorting/filtering, parameter definitions for form generation, and validation rules.",
+      "sorting_fields": {
+        "module": "Filter by source Python module (p3dFiltPy, p3dFiltPy_16, p3dBlobPy, p3dSkelPy, p3dSITKPy, p3dSITKPy_16)",
+        "category": "Filter by functional category (Input/Output, Noise Reduction, Segmentation, Morphological Operations, Distance Transform, Connected Components, Quantitative Analysis, Skeletonization, Advanced Filters)",
+        "bit_depth": "Filter by image bit depth (8-bit, 16-bit, N/A)",
+        "interface_type": "Filter by data interface (memory_based, file_based)"
+      },
+      "parameter_handling": {
+        "required_true": "Parameter must be provided by user - display as mandatory field",
+        "required_false": "Parameter is optional - pre-fill with default value, allow user modification",
+        "is_constant_true": "Parameter is locked due to code limitations - display as read-only with constant value",
+        "is_constant_false": "Parameter can be modified by user within specified range",
+        "path_info_present": "Parameter is a file/folder path - use appropriate file dialog (input=open, output=save)",
+        "range_array": "For numeric types, validate input is within [min, max] inclusive",
+        "range_enum": "For enumerated types, validate input is one of the allowed values"
+      },
+      "form_generation_steps": [
+        "1. Read function entry from 'functions' array",
+        "2. Display 'display_name' as form title",
+        "3. Show 'description' as expandable help text",
+        "4. For each parameter in 'parameters' array:",
+        "   a. Create input field based on 'datatype'",
+        "   b. Set field label to 'display_name'",
+        "   c. If 'is_constant'=true, make field read-only with 'constant_value'",
+        "   d. If 'required'=false, pre-fill with 'default'",
+        "   e. Add 'tooltip' as hover help text",
+        "   f. If 'path_info' exists, attach file/folder browser button",
+        "   g. Apply validation based on 'range' or 'allowed_values'",
+        "5. On form submit, call function using 'function_call' with parameters in 'parameters' order",
+        "6. Handle return based on 'return_value' specification"
+      ],
+      "datatype_mappings": {
+        "string": "Text input field",
+        "int": "Integer spinner or text field with integer validation",
+        "float": "Decimal spinner or text field with float validation",
+        "bool": "Checkbox or toggle switch",
+        "bytearray": "Memory buffer - typically from previous function output or file load",
+        "ushort_array": "16-bit memory buffer",
+        "uint_array": "32-bit memory buffer",
+        "struct": "Complex return type - display as expandable result panel"
+      }
+    },
+    "functions": [
+      {
+        "id": "FN001",
+        "display_name": "Read 8-bit RAW Image",
+        "function_call": "p3dFiltPy.py_p3dReadRaw8",
+        "signature": "(filename, dimx, dimy, dimz=0)",
+        "description": "Reads a RAW image file in 8-bit unsigned format from disk into memory. The function loads volumetric data stored in raw binary format without headers. For 2D images, set dimz to 0 or 1. This is typically the first step in any image processing workflow.",
+        "example_usage": "image_data = py_p3dReadRaw8('/path/to/sample.raw', 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A matrix of type BYTE (unsigned 8-bit) with dimensions dimx Ã— dimy Ã— dimz representing the loaded image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Input/Output",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input File Path",
+            "code_name": "filename",
+            "datatype": "string",
+            "description": "Full path to the RAW image file to read. The file must exist and be in unsigned 8-bit format.",
+            "tooltip": "Select the RAW image file to load. Must be 8-bit unsigned format.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "input",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels. Must match the actual image dimensions.",
+            "tooltip": "Image width in pixels. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels. Must match the actual image dimensions.",
+            "tooltip": "Image height in pixels. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth of the image in slices. Set to 0 or 1 for 2D images. For 3D volumes, specify the number of slices.",
+            "tooltip": "Number of slices for 3D volumes. Use 0 or 1 for 2D images.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN002",
+        "display_name": "Write 8-bit RAW Image",
+        "function_call": "p3dFiltPy.py_p3dWriteRaw8",
+        "signature": "(image_data, filename, dimx, dimy, dimz=0)",
+        "description": "Writes an 8-bit unsigned image from memory to a RAW file on disk. The output file contains only raw binary data without headers. This function is used to save processed images for later use or analysis in other software.",
+        "example_usage": "py_p3dWriteRaw8(processed_image, '/path/to/output.raw', 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Returns the same image data that was written (pass-through)"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Input/Output",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit image data in memory to write to disk.",
+            "tooltip": "Image data from a previous operation or loaded image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Output File Path",
+            "code_name": "filename",
+            "datatype": "string",
+            "description": "Full path where the RAW image file will be saved.",
+            "tooltip": "Specify the location and filename for the output RAW file.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 3,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels.",
+            "tooltip": "Image width in pixels. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels.",
+            "tooltip": "Image height in pixels. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth of the image in slices. Set to 0 or 1 for 2D images.",
+            "tooltip": "Number of slices for 3D volumes. Use 0 or 1 for 2D images.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN003",
+        "display_name": "Gaussian Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dGaussianFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3, sigma=1.0)",
+        "description": "Applies Gaussian smoothing to reduce noise while preserving edges better than mean filtering. The filter uses a bell-shaped kernel that weights central pixels more heavily than neighbors. Effective for removing Gaussian noise while maintaining image structure.",
+        "example_usage": "smoothed = py_p3dGaussianFilter8(image_data, 512, 512, 100, 3, 1.0)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A smoothed image with same dimensions and type as input"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit input image to filter.",
+            "tooltip": "Input image data to be smoothed.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels.",
+            "tooltip": "Image width. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels.",
+            "tooltip": "Image height. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D images.",
+            "tooltip": "Number of slices. Use 0 for 2D images.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "The side length of the cubic/square kernel. Due to code limitations, this value is fixed at 3.",
+            "tooltip": "Kernel size (fixed at 3 due to implementation).",
+            "range": [3, 3],
+            "default": 3,
+            "required": false,
+            "is_constant": true,
+            "constant_value": 3
+          },
+          {
+            "order": 6,
+            "display_name": "Sigma (Standard Deviation)",
+            "code_name": "sigma",
+            "datatype": "float",
+            "description": "Standard deviation of the Gaussian kernel. Due to code limitations, this value is fixed at 1.0.",
+            "tooltip": "Gaussian sigma (fixed at 1.0 due to implementation).",
+            "range": [1.0, 1.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": true,
+            "constant_value": 1.0
+          }
+        ]
+      },
+      {
+        "id": "FN004",
+        "display_name": "Mean Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dMeanFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3)",
+        "description": "Applies mean (average) filtering for basic noise reduction. Replaces each pixel with the average value of its neighborhood. Simple and fast, but can blur edges. Multiple passes with small kernels can approximate larger kernel effects.",
+        "example_usage": "smoothed = py_p3dMeanFilter8(image_data, 512, 512, 100, 5)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A smoothed image with same dimensions and type as input"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit input image to filter.",
+            "tooltip": "Input image data to be smoothed.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels.",
+            "tooltip": "Image width. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels.",
+            "tooltip": "Image height. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D images.",
+            "tooltip": "Number of slices. Use 0 for 2D images.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "Side length of the square/cubic kernel. Must be an odd number. Larger values produce stronger smoothing.",
+            "tooltip": "Kernel size (odd number, 3-51). Larger = more smoothing.",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN005",
+        "display_name": "Median Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dMedianFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3)",
+        "description": "Applies median filtering for noise reduction while preserving edges. Replaces each pixel with the median value of its neighborhood. Excellent for removing salt-and-pepper noise without blurring edges. Does not create artificial pixel values.",
+        "example_usage": "filtered = py_p3dMedianFilter8(image_data, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A filtered image with same dimensions and type as input"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit input image to filter.",
+            "tooltip": "Input image data to be filtered.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels.",
+            "tooltip": "Image width. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels.",
+            "tooltip": "Image height. Must be greater than 0.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D images.",
+            "tooltip": "Number of slices. Use 0 for 2D images.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "Side length of the square/cubic kernel. Must be an odd number.",
+            "tooltip": "Kernel size (odd number, 3-51).",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN006",
+        "display_name": "Bilateral Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dBilateralFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, size=3, sigma_d=1.0, sigma_r=3, iterations=10)",
+        "description": "Edge-preserving smoothing that combines spatial and intensity proximity. Smooths similar-intensity regions while preserving edges by weighting pixels based on both distance and intensity similarity. Excellent for denoising while maintaining structural boundaries.",
+        "example_usage": "filtered = py_p3dBilateralFilter8(image_data, 512, 512, 100, 5, 1.0, 3.0, 5)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A filtered image with same dimensions and type as input"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit input image to filter.",
+            "tooltip": "Input image data.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image in pixels/voxels.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image in pixels/voxels.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D images.",
+            "tooltip": "Number of slices. Use 0 for 2D.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "size",
+            "datatype": "int",
+            "description": "Side length of the cubic kernel. Must be an odd number.",
+            "tooltip": "Kernel size (odd, 3-51).",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Spatial Sigma",
+            "code_name": "sigma_d",
+            "datatype": "float",
+            "description": "Standard deviation for spatial (domain) Gaussian. Controls how distance affects weighting.",
+            "tooltip": "Spatial sigma. Higher = more distant pixels included.",
+            "range": [0.01, 100.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Range Sigma",
+            "code_name": "sigma_r",
+            "datatype": "float",
+            "description": "Standard deviation for range (intensity) Gaussian. Controls how intensity difference affects weighting.",
+            "tooltip": "Range sigma. Higher = more intensity variation tolerated.",
+            "range": [0.01, 100.0],
+            "default": 3.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "description": "Number of times to apply the filter. Multiple iterations increase smoothing effect.",
+            "tooltip": "Number of filter passes.",
+            "range": [1, 100],
+            "default": 10,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN007",
+        "display_name": "Anisotropic Diffusion Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dAnisotropicDiffusionFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, m=1, lambdaP=0.01, sigma=0.01, iterP=10)",
+        "description": "Edge-enhancing smoothing using anisotropic diffusion. Smooths homogeneous regions while enhancing edges. With small diffusion parameters and long diffusion time, preserves fine structural details better than bilateral filtering. Memory intensive operation.",
+        "example_usage": "filtered = py_p3dAnisotropicDiffusionFilter8(image_data, 512, 512, 100, 1, 0.01, 0.01, 10)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A filtered image with same dimensions and type as input"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 8-bit input image to filter.",
+            "tooltip": "Input image data.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Diffusion Mode",
+            "code_name": "m",
+            "datatype": "int",
+            "description": "Diffusion mode parameter controlling the smoothing behavior.",
+            "tooltip": "Diffusion mode (typically 1).",
+            "range": [1, 10],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Lambda (Diffusion Rate)",
+            "code_name": "lambdaP",
+            "datatype": "float",
+            "description": "Diffusion rate parameter. Higher values = faster diffusion, more smoothing of details.",
+            "tooltip": "Diffusion rate. Keep small (0.01-0.1) for detail preservation.",
+            "range": [0.001, 1.0],
+            "default": 0.01,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Sigma (Edge Sensitivity)",
+            "code_name": "sigma",
+            "datatype": "float",
+            "description": "Controls edge sensitivity. Higher values smooth more aggressively across edges.",
+            "tooltip": "Edge sensitivity. Keep small to preserve edges.",
+            "range": [0.001, 1.0],
+            "default": 0.01,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterP",
+            "datatype": "int",
+            "description": "Number of diffusion iterations. More iterations = longer diffusion time = more smoothing.",
+            "tooltip": "Diffusion iterations.",
+            "range": [1, 1000],
+            "default": 10,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN008",
+        "display_name": "Boin-Haibel Ring Remover (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dBoinHaibelRingRemover8",
+        "signature": "(image_data, dimx, dimy, centerX=0, centerY=0, winsize=0, iterations=0, precision=0)",
+        "description": "Removes ring artifacts from CT reconstructed images using the Boin-Haibel algorithm. Ring artifacts appear as concentric circles in reconstructed tomographic images due to detector defects. This is a 2D-only operation.",
+        "example_usage": "corrected = py_p3dBoinHaibelRingRemover8(slice_data, 512, 512, 256, 256, 51, 3, 1.5)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A 2D filtered image with ring artifacts reduced"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 2D 8-bit input image with ring artifacts.",
+            "tooltip": "2D slice with ring artifacts.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Center X",
+            "code_name": "centerX",
+            "datatype": "int",
+            "description": "X coordinate of ring artifact center. If 0, image center is used.",
+            "tooltip": "Ring center X. Use 0 for image center.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Center Y",
+            "code_name": "centerY",
+            "datatype": "int",
+            "description": "Y coordinate of ring artifact center. If 0, image center is used.",
+            "tooltip": "Ring center Y. Use 0 for image center.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Window Size",
+            "code_name": "winsize",
+            "datatype": "int",
+            "description": "Size of the processing window.",
+            "tooltip": "Processing window size.",
+            "range": [0, 201],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "description": "Number of correction iterations.",
+            "tooltip": "Number of passes.",
+            "range": [0, 100],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Precision",
+            "code_name": "precision",
+            "datatype": "float",
+            "description": "Precision of polar-cartesian conversion.",
+            "tooltip": "Conversion precision.",
+            "range": [0.0, 5.0],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN009",
+        "display_name": "Sijbers-Postnov Ring Remover (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dSijbersPostnovRingRemover8",
+        "signature": "(image_data, dimx, dimy, centerX=0, centerY=0, winsize=5, thresh=1, iterations=1, precision=1.5, mask=None)",
+        "description": "Advanced ring artifact removal using the Sijbers-Postnov algorithm. Transforms image to polar coordinates where rings become vertical lines, detects and corrects artifacts, then transforms back. More effective than Boin-Haibel for severe artifacts. 2D only.",
+        "example_usage": "corrected = py_p3dSijbersPostnovRingRemover8(slice_data, 512, 512, 256, 256, 51, 3.0, 3, 1.5, mask)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "A 2D filtered image with ring artifacts removed"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Noise Reduction",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "The 2D 8-bit input image with ring artifacts.",
+            "tooltip": "2D slice with ring artifacts.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Center X",
+            "code_name": "centerX",
+            "datatype": "int",
+            "description": "X coordinate of ring artifact center. If 0, image center is used.",
+            "tooltip": "Ring center X. Use 0 for automatic.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Center Y",
+            "code_name": "centerY",
+            "datatype": "int",
+            "description": "Y coordinate of ring artifact center. If 0, image center is used.",
+            "tooltip": "Ring center Y. Use 0 for automatic.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Window Size",
+            "code_name": "winsize",
+            "datatype": "int",
+            "description": "Sliding window size for detecting homogeneous rows. Must be odd. Larger windows detect more artifacts but may over-correct.",
+            "tooltip": "Window size (odd, 3-201). Larger = more detection.",
+            "range": [3, 201],
+            "allowed_values_constraint": "odd_only",
+            "default": 5,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Threshold",
+            "code_name": "thresh",
+            "datatype": "float",
+            "description": "Homogeneity threshold. ~3Ã— image noise variance is recommended. Lower = more sensitive to faint artifacts.",
+            "tooltip": "Detection threshold. Use ~3Ã— noise variance.",
+            "range": [0.1, 100.0],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "description": "Number of correction passes. More passes for severe artifacts.",
+            "tooltip": "Correction iterations.",
+            "range": [1, 100],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 9,
+            "display_name": "Precision",
+            "code_name": "precision",
+            "datatype": "float",
+            "description": "Polar-cartesian conversion precision. Higher = better quality but slower.",
+            "tooltip": "Conversion precision (1.0-5.0).",
+            "range": [1.0, 5.0],
+            "default": 1.5,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 10,
+            "display_name": "Region Mask",
+            "code_name": "mask",
+            "datatype": "bytearray",
+            "description": "Optional 2D mask (255=process, 0=ignore). Limits processing to region of interest for faster execution.",
+            "tooltip": "Optional ROI mask. None = process entire image.",
+            "range": null,
+            "default": null,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN010",
+        "display_name": "Clear Border Filter (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dClearBorderFilter8",
+        "signature": "(image_data, dimx, dimy, dimz=0, connIn=6)",
+        "description": "Removes connected components (blobs) that touch image borders. Useful for eliminating incomplete objects at volume edges that would skew analysis. Uses connected component labeling to identify and remove border-touching regions.",
+        "example_usage": "cleaned = py_p3dClearBorderFilter8(binary_image, 512, 512, 100, 6)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary image with border-connected objects removed"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Morphological Operations",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image (255=object, 0=background).",
+            "tooltip": "Binary image to clean.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Connectivity",
+            "code_name": "connIn",
+            "datatype": "int",
+            "description": "Voxel connectivity for component detection. 6=faces only, 18=faces+edges, 26=faces+edges+corners.",
+            "tooltip": "3D connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN011",
+        "display_name": "Automatic Thresholding (8-bit)",
+        "function_call": "p3dFiltPy.py_p3dAutoThresholding8",
+        "signature": "(image_data, dimx, dimy, dimz=0, methodNum=1, thresh_val=7)",
+        "description": "Segments grayscale image into binary using automatically computed threshold. Seven methods available: (1) Kittler-Illingworth, (2) Otsu, (3) Pun, (4) Ridler-Calvard, (5) Kapur, (6) Tsai moment-preserving, (7) Huang-Yager. Each method optimal for different image types.",
+        "example_usage": "binary = py_p3dAutoThresholding8(image_data, 512, 512, 100, 2)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary image (255=object, 0=background)"
+        },
+        "metadata": {
+          "module": "p3dFiltPy",
+          "category": "Segmentation",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Grayscale 8-bit input image.",
+            "tooltip": "Grayscale image to threshold.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Thresholding Method",
+            "code_name": "methodNum",
+            "datatype": "int",
+            "description": "Algorithm selection: 1=Kittler (bimodal), 2=Otsu (variance), 3=Pun (entropy), 4=Ridler (iterative), 5=Kapur (entropy), 6=Tsai (moments), 7=Huang-Yager.",
+            "tooltip": "Select thresholding algorithm (1-7).",
+            "allowed_values": [1, 2, 3, 4, 5, 6, 7],
+            "allowed_values_labels": {
+              "1": "Kittler-Illingworth (bimodal histograms)",
+              "2": "Otsu (minimize intra-class variance)",
+              "3": "Pun (entropy-based)",
+              "4": "Ridler-Calvard (iterative mean)",
+              "5": "Kapur (maximum entropy)",
+              "6": "Tsai (moment-preserving)",
+              "7": "Huang-Yager (fuzzy)"
+            },
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Threshold Value (Output)",
+            "code_name": "thresh_val",
+            "datatype": "int",
+            "description": "Output parameter receiving the computed threshold value (0-255). This is computed by the function.",
+            "tooltip": "Receives computed threshold (read-only output).",
+            "range": [0, 255],
+            "default": 7,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          }
+        ]
+      },
+      {
+        "id": "FN012",
+        "display_name": "Read 16-bit RAW Image",
+        "function_call": "p3dFiltPy_16.py_p3dReadRaw16",
+        "signature": "(filename, dimx, dimy, dimz=0, big_endian=0, is_signed=0)",
+        "description": "Reads a RAW image file in 16-bit format from disk. Supports both little-endian (default) and big-endian byte orders. The library internally uses unsigned format; signed images should be converted externally.",
+        "example_usage": "image_data = py_p3dReadRaw16('/path/to/sample.raw', 512, 512, 100, 0, 0)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "A matrix of type UINT16 with dimensions dimx Ã— dimy Ã— dimz"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Input/Output",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input File Path",
+            "code_name": "filename",
+            "datatype": "string",
+            "description": "Full path to the 16-bit RAW image file.",
+            "tooltip": "Select 16-bit RAW file to load.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "input",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes. Use 0 for 2D.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Big Endian",
+            "code_name": "big_endian",
+            "datatype": "int",
+            "description": "Byte order: 0=little-endian (Intel, default), 1=big-endian.",
+            "tooltip": "0=little-endian, 1=big-endian.",
+            "allowed_values": [0, 1],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Signed Format",
+            "code_name": "is_signed",
+            "datatype": "int",
+            "description": "Data signedness: 0=unsigned (default), 1=signed. Note: Library uses unsigned internally.",
+            "tooltip": "0=unsigned, 1=signed.",
+            "allowed_values": [0, 1],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN013",
+        "display_name": "Write 16-bit RAW Image",
+        "function_call": "p3dFiltPy_16.py_p3dWriteRaw16",
+        "signature": "(image_data, filename, dimx, dimy, dimz=0, is_little=1, is_signed=0)",
+        "description": "Writes a 16-bit image from memory to a RAW file. Supports both endianness options and signed/unsigned format specification.",
+        "example_usage": "py_p3dWriteRaw16(processed_image, '/path/to/output.raw', 512, 512, 100, 1, 0)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Returns the same image data (pass-through)"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Input/Output",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit image data to write.",
+            "tooltip": "16-bit image data from previous operation.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Output File Path",
+            "code_name": "filename",
+            "datatype": "string",
+            "description": "Full path for the output file.",
+            "tooltip": "Specify output file location.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 3,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "The width of the image.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "The height of the image.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "The depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Little Endian",
+            "code_name": "is_little",
+            "datatype": "int",
+            "description": "Byte order: 1=little-endian (default), 0=big-endian.",
+            "tooltip": "1=little-endian, 0=big-endian.",
+            "allowed_values": [0, 1],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Signed Format",
+            "code_name": "is_signed",
+            "datatype": "int",
+            "description": "Data signedness: 0=unsigned (default), 1=signed.",
+            "tooltip": "0=unsigned, 1=signed.",
+            "allowed_values": [0, 1],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN014",
+        "display_name": "Gaussian Filter (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dGaussianFilter16",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3, sigma=1.0)",
+        "description": "Applies Gaussian smoothing to 16-bit images. Same algorithm as 8-bit version but preserves 16-bit dynamic range. Note: Kernel size and sigma are fixed due to implementation.",
+        "example_usage": "smoothed = py_p3dGaussianFilter16(image_data, 512, 512, 100, 3, 1.0)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Smoothed 16-bit image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image.",
+            "tooltip": "16-bit image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "Kernel size (fixed at 3 due to implementation).",
+            "tooltip": "Kernel size (fixed).",
+            "range": [3, 3],
+            "default": 3,
+            "required": false,
+            "is_constant": true,
+            "constant_value": 3
+          },
+          {
+            "order": 6,
+            "display_name": "Sigma",
+            "code_name": "sigma",
+            "datatype": "float",
+            "description": "Gaussian sigma (fixed at 1.0 due to implementation).",
+            "tooltip": "Sigma (fixed).",
+            "range": [1.0, 1.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": true,
+            "constant_value": 1.0
+          }
+        ]
+      },
+      {
+        "id": "FN015",
+        "display_name": "Mean Filter (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dMeanFilter16",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3)",
+        "description": "Applies mean filtering to 16-bit images. Replaces each voxel with the average of its neighborhood. Preserves 16-bit dynamic range.",
+        "example_usage": "smoothed = py_p3dMeanFilter16(image_data, 512, 512, 100, 5)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Smoothed 16-bit image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image.",
+            "tooltip": "16-bit image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "Kernel side length. Must be odd.",
+            "tooltip": "Kernel size (odd, 3-51).",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN016",
+        "display_name": "Median Filter (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dMedianFilter16",
+        "signature": "(image_data, dimx, dimy, dimz=0, width=3)",
+        "description": "Applies median filtering to 16-bit images. Excellent for salt-and-pepper noise removal while preserving edges and 16-bit dynamic range.",
+        "example_usage": "filtered = py_p3dMedianFilter16(image_data, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Filtered 16-bit image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image.",
+            "tooltip": "16-bit image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "width",
+            "datatype": "int",
+            "description": "Kernel side length. Must be odd.",
+            "tooltip": "Kernel size (odd, 3-51).",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN017",
+        "display_name": "Bilateral Filter (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dBilateralFilter16",
+        "signature": "(image_data, dimx, dimy, dimz=0, size=3, sigma_d=1.0, sigma_r=3, iterations=10)",
+        "description": "Edge-preserving smoothing for 16-bit images using bilateral filtering. Preserves full 16-bit dynamic range while reducing noise.",
+        "example_usage": "filtered = py_p3dBilateralFilter16(image_data, 512, 512, 100, 5, 1.0, 3.0, 5)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Filtered 16-bit image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image.",
+            "tooltip": "16-bit image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Size",
+            "code_name": "size",
+            "datatype": "int",
+            "description": "Kernel side length. Must be odd.",
+            "tooltip": "Kernel size (odd, 3-51).",
+            "range": [3, 51],
+            "allowed_values_constraint": "odd_only",
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Spatial Sigma",
+            "code_name": "sigma_d",
+            "datatype": "float",
+            "description": "Standard deviation for spatial Gaussian.",
+            "tooltip": "Spatial sigma.",
+            "range": [0.01, 100.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Range Sigma",
+            "code_name": "sigma_r",
+            "datatype": "float",
+            "description": "Standard deviation for range Gaussian.",
+            "tooltip": "Range sigma.",
+            "range": [0.01, 100.0],
+            "default": 3.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "description": "Number of filter passes.",
+            "tooltip": "Iterations.",
+            "range": [1, 100],
+            "default": 10,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN018",
+        "display_name": "Anisotropic Diffusion Filter (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dAnisotropicDiffusionFilter16",
+        "signature": "(image_data, dimx, dimy, dimz=0, m=1, lambdaP=0.01, sigma=0.01, iterP=10)",
+        "description": "Edge-enhancing anisotropic diffusion for 16-bit images. Preserves fine details while smoothing homogeneous regions. Memory intensive.",
+        "example_usage": "filtered = py_p3dAnisotropicDiffusionFilter16(image_data, 512, 512, 100, 1, 0.01, 0.01, 10)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Filtered 16-bit image"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image.",
+            "tooltip": "16-bit image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Diffusion Mode",
+            "code_name": "m",
+            "datatype": "int",
+            "description": "Diffusion mode parameter.",
+            "tooltip": "Diffusion mode.",
+            "range": [1, 10],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Lambda",
+            "code_name": "lambdaP",
+            "datatype": "float",
+            "description": "Diffusion rate.",
+            "tooltip": "Lambda (diffusion rate).",
+            "range": [0.001, 1.0],
+            "default": 0.01,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Sigma",
+            "code_name": "sigma",
+            "datatype": "float",
+            "description": "Edge sensitivity.",
+            "tooltip": "Sigma (edge sensitivity).",
+            "range": [0.001, 1.0],
+            "default": 0.01,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterP",
+            "datatype": "int",
+            "description": "Diffusion iterations.",
+            "tooltip": "Number of iterations.",
+            "range": [1, 1000],
+            "default": 10,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN019",
+        "display_name": "Sijbers-Postnov Ring Remover (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dSijbersPostnovRingRemover16",
+        "signature": "(image_data, dimx, dimy, centerX=0, centerY=0, winsize=5, thresh=1, iterations=1, precision=1.5, is_bit12=False, mask=None)",
+        "description": "Ring artifact removal for 16-bit images using Sijbers-Postnov algorithm. Includes option for 12-bit data stored in 16-bit format. 2D only.",
+        "example_usage": "corrected = py_p3dSijbersPostnovRingRemover16(slice_data, 512, 512, 256, 256, 51, 3.0, 3, 1.5, False, mask)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "2D image with ring artifacts removed"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Noise Reduction",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "2D 16-bit image with ring artifacts.",
+            "tooltip": "16-bit slice with artifacts.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Center X",
+            "code_name": "centerX",
+            "datatype": "int",
+            "description": "Ring center X. 0=auto.",
+            "tooltip": "Ring center X.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Center Y",
+            "code_name": "centerY",
+            "datatype": "int",
+            "description": "Ring center Y. 0=auto.",
+            "tooltip": "Ring center Y.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Window Size",
+            "code_name": "winsize",
+            "datatype": "int",
+            "description": "Sliding window size (odd).",
+            "tooltip": "Window size (odd, 3-201).",
+            "range": [3, 201],
+            "allowed_values_constraint": "odd_only",
+            "default": 5,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Threshold",
+            "code_name": "thresh",
+            "datatype": "float",
+            "description": "Homogeneity threshold.",
+            "tooltip": "Detection threshold.",
+            "range": [0.1, 1000.0],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "description": "Correction passes.",
+            "tooltip": "Number of iterations.",
+            "range": [1, 100],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 9,
+            "display_name": "Precision",
+            "code_name": "precision",
+            "datatype": "float",
+            "description": "Polar conversion precision.",
+            "tooltip": "Precision (1.0-5.0).",
+            "range": [1.0, 5.0],
+            "default": 1.5,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 10,
+            "display_name": "12-bit Data Flag",
+            "code_name": "is_bit12",
+            "datatype": "bool",
+            "description": "Enable for 12-bit data in 16-bit container. Adjusts threshold normalization.",
+            "tooltip": "Check if data is 12-bit in 16-bit format.",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 11,
+            "display_name": "Region Mask",
+            "code_name": "mask",
+            "datatype": "bytearray",
+            "description": "Optional 8-bit ROI mask.",
+            "tooltip": "Optional mask (None=full image).",
+            "range": null,
+            "default": null,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN020",
+        "display_name": "Automatic Thresholding (16-bit)",
+        "function_call": "p3dFiltPy_16.py_p3dAutoThresholding16",
+        "signature": "(image_data, dimx, dimy, dimz=0, methodNum=1)",
+        "description": "Automatic thresholding for 16-bit images. Same seven methods as 8-bit version. Output threshold is in range 0-65535.",
+        "example_usage": "binary = py_p3dAutoThresholding16(image_data, 512, 512, 100, 2)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "Binary image (object=65535, background=0)"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Segmentation",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Image Data",
+            "code_name": "image_data",
+            "datatype": "ushort_array",
+            "description": "Grayscale 16-bit input image.",
+            "tooltip": "16-bit grayscale image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Thresholding Method",
+            "code_name": "methodNum",
+            "datatype": "int",
+            "description": "Algorithm: 1=Kittler, 2=Otsu, 3=Pun, 4=Ridler, 5=Kapur, 6=Tsai, 7=Huang-Yager.",
+            "tooltip": "Thresholding method (1-7).",
+            "allowed_values": [1, 2, 3, 4, 5, 6, 7],
+            "allowed_values_labels": {
+              "1": "Kittler-Illingworth",
+              "2": "Otsu",
+              "3": "Pun",
+              "4": "Ridler-Calvard",
+              "5": "Kapur",
+              "6": "Tsai",
+              "7": "Huang-Yager"
+            },
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN021",
+        "display_name": "Convert 16-bit to 8-bit",
+        "function_call": "p3dFiltPy_16.py_p3dFrom16To8",
+        "signature": "(image_data16, dimx, dimy, dimz)",
+        "description": "Converts a 16-bit image to 8-bit by rescaling intensity values. Maps the full 16-bit range (0-65535) to 8-bit range (0-255).",
+        "example_usage": "image8 = py_p3dFrom16To8(image16, 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "8-bit image with rescaled intensities"
+        },
+        "metadata": {
+          "module": "p3dFiltPy_16",
+          "category": "Input/Output",
+          "bit_depth": "16-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "16-bit Image Data",
+            "code_name": "image_data16",
+            "datatype": "ushort_array",
+            "description": "The 16-bit input image to convert.",
+            "tooltip": "16-bit source image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN022",
+        "display_name": "Basic Analysis",
+        "function_call": "p3dBlobPy.py_p3dBasicAnalysis",
+        "signature": "(image_data, dimx, dimy, dimz=0, resolution=1.0)",
+        "description": "Computes fundamental 3D morphometric parameters for porous materials: volume fraction (porosity), specific surface area, mean curvature integral, and Euler characteristic (connectivity). Essential first-step analysis for any porous sample.",
+        "example_usage": "stats = py_p3dBasicAnalysis(binary_image, 512, 512, 100, 0.001)",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "BasicStats",
+          "description": "Structure containing computed parameters",
+          "fields": [
+            {"name": "Volume Fraction (Vv)", "code_name": "Vv", "unit": "dimensionless", "description": "Ratio of object voxels to total voxels (porosity/density)"},
+            {"name": "Specific Surface Area (Sv)", "code_name": "Sv", "unit": "mmâ»Â¹", "description": "Surface area per unit volume, related to mechanical properties"},
+            {"name": "Mean Curvature Integral (Mv)", "code_name": "Mv", "unit": "mmâ»Â²", "description": "Positive=convex dominant, Negative=concave dominant"},
+            {"name": "Euler Characteristic (Cv)", "code_name": "Cv", "unit": "mmâ»Â³", "description": "Connectivity index of the object network"}
+          ]
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image (255=object, 0=background).",
+            "tooltip": "Binary image to analyze.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Voxel Size (Resolution)",
+            "code_name": "resolution",
+            "datatype": "float",
+            "description": "Physical size of one voxel in mm. Use 1.0 for results in voxel units.",
+            "tooltip": "Voxel size in mm (e.g., 0.001 for 1 micron).",
+            "range": [0.0000001, 1000.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN023",
+        "display_name": "Anisotropy Analysis",
+        "function_call": "p3dBlobPy.py_p3dAnisotropyAnalysis",
+        "signature": "(image_data, dimx, dimy, dimz=0, resolution=1.0)",
+        "description": "Analyzes directional dependence of pore structure. Computes isotropy index (uniformity of distribution) and elongation index (preferred orientation). Essential for materials where directional properties matter (e.g., trabecular bone, fibrous materials).",
+        "example_usage": "aniso = py_p3dAnisotropyAnalysis(binary_image, 512, 512, 100, 0.001)",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "AnisotropyStats",
+          "description": "Structure containing anisotropy parameters",
+          "fields": [
+            {"name": "Isotropy Index (I)", "code_name": "I", "unit": "dimensionless", "description": "0=fully anisotropic (single plane/axis), 1=perfectly isotropic"},
+            {"name": "Elongation Index (E)", "code_name": "E", "unit": "dimensionless", "description": "0=no preferred orientation, 1=perfect alignment"}
+          ]
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image to analyze.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Voxel Size",
+            "code_name": "resolution",
+            "datatype": "float",
+            "description": "Physical voxel size in mm.",
+            "tooltip": "Voxel size in mm.",
+            "range": [0.0000001, 1000.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN024",
+        "display_name": "Connected Components Labeling",
+        "function_call": "p3dBlobPy.py_p3dBlobLabeling",
+        "signature": "(image_data, dimx, dimy, dimz=0, conn3D=6)",
+        "description": "Identifies and labels separate connected regions (blobs) in a binary image. Each blob receives a unique gray level. Maximum 65535 blobs supported. Essential preprocessing for blob analysis.",
+        "example_usage": "labeled = py_p3dBlobLabeling(binary_image, 512, 512, 100, 6)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "16-bit labeled image where each blob has unique gray value"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Connected Components",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image to label.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Connectivity",
+            "code_name": "conn3D",
+            "datatype": "int",
+            "description": "3D connectivity: 6=faces, 18=faces+edges, 26=all neighbors.",
+            "tooltip": "Connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN025",
+        "display_name": "Get Largest Blob",
+        "function_call": "p3dBlobPy.py_p3dGetMaxVolumeBlob3D",
+        "signature": "(image_data, dimx, dimy, dimz=0, conn3D=6)",
+        "description": "Extracts only the largest connected component from a binary image. Useful for isolating the main structure and removing small noise particles or satellite objects.",
+        "example_usage": "largest = py_p3dGetMaxVolumeBlob3D(binary_image, 512, 512, 100, 6)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary image containing only the largest blob"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Connected Components",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Connectivity",
+            "code_name": "conn3D",
+            "datatype": "int",
+            "description": "3D connectivity.",
+            "tooltip": "Connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN026",
+        "display_name": "Get Smallest Blob",
+        "function_call": "p3dBlobPy.py_p3dGetMinVolumeBlob3D",
+        "signature": "(image_data, dimx, dimy, dimz=0, conn3D=6)",
+        "description": "Extracts only the smallest connected component from a binary image. Can be useful for identifying minimum feature sizes or isolated particles.",
+        "example_usage": "smallest = py_p3dGetMinVolumeBlob3D(binary_image, 512, 512, 100, 6)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary image containing only the smallest blob"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Connected Components",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Connectivity",
+            "code_name": "conn3D",
+            "datatype": "int",
+            "description": "3D connectivity.",
+            "tooltip": "Connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN027",
+        "display_name": "Minimum Volume Filter",
+        "function_call": "p3dBlobPy.py_p3dMinVolumeFilter3D",
+        "signature": "(image_data, dimx, dimy, dimz=0, min_vol=5, conn=6)",
+        "description": "Removes connected components smaller than a specified volume threshold. Effective for eliminating noise particles while preserving meaningful structures. Input must be binary (255=object).",
+        "example_usage": "cleaned = py_p3dMinVolumeFilter3D(binary_image, 512, 512, 100, 100, 6)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Filtered binary image with small blobs removed"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Connected Components",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image to filter.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Minimum Volume (voxels)",
+            "code_name": "min_vol",
+            "datatype": "int",
+            "description": "Blobs with fewer voxels than this threshold are removed.",
+            "tooltip": "Minimum blob size to keep (in voxels).",
+            "range": [1, 1000000000],
+            "default": 5,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Connectivity",
+            "code_name": "conn",
+            "datatype": "int",
+            "description": "3D connectivity.",
+            "tooltip": "Connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN028",
+        "display_name": "Chamfer Distance Transform",
+        "function_call": "p3dBlobPy.py_p3dChamferDT",
+        "signature": "(image_data, dimx, dimy, dimz=0, w1=3, w2=4, w3=5)",
+        "description": "Computes distance transform using chamfer (weighted) distances. Each object voxel receives a value representing its distance to the nearest background. Common weight sets: Cityblock <1,-,->, Chessboard <1,1,1>, Quasi-Euclidean <3,4,5>.",
+        "example_usage": "distance_map = py_p3dChamferDT(binary_image, 512, 512, 100, 3, 4, 5)",
+        "return_value": {
+          "type": "ushort_array",
+          "description": "16-bit distance transform image"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Distance Transform",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Weight 1 (face neighbors)",
+            "code_name": "w1",
+            "datatype": "int",
+            "description": "Weight for face-adjacent voxels.",
+            "tooltip": "Face neighbor weight.",
+            "range": [1, 10],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Weight 2 (edge neighbors)",
+            "code_name": "w2",
+            "datatype": "int",
+            "description": "Weight for edge-adjacent voxels.",
+            "tooltip": "Edge neighbor weight.",
+            "range": [1, 10],
+            "default": 4,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Weight 3 (corner neighbors)",
+            "code_name": "w3",
+            "datatype": "int",
+            "description": "Weight for corner-adjacent voxels.",
+            "tooltip": "Corner neighbor weight.",
+            "range": [1, 10],
+            "default": 5,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN029",
+        "display_name": "Squared Euclidean Distance Transform",
+        "function_call": "p3dBlobPy.py_p3dSquaredEuclideanDT",
+        "signature": "(image_data, dimx, dimy, dimz=0)",
+        "description": "Computes true Euclidean distance transform with squared values (to avoid floating point). Each object voxel receives the squared distance to the nearest background voxel. Take square root for actual distances.",
+        "example_usage": "sq_distance = py_p3dSquaredEuclideanDT(binary_image, 512, 512, 100)",
+        "return_value": {
+          "type": "uint_array",
+          "description": "32-bit squared distance transform image"
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Distance Transform",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN030",
+        "display_name": "Morphometric Analysis (Trabecular)",
+        "function_call": "p3dBlobPy.py_p3dMorphometricAnalysis",
+        "signature": "(image_data, dimx, dimy, dimz, resolution=1.0)",
+        "description": "Computes trabecular bone-style morphometric parameters: BV/TV (bone volume fraction), Tb.Th (trabecular thickness), Tb.Sp (trabecular separation), Tb.N (trabecular number). Applicable to any trabecular-like porous structure.",
+        "example_usage": "morpho = py_p3dMorphometricAnalysis(binary_image, 512, 512, 100, 0.001)",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "MorphometricStats",
+          "description": "Trabecular morphometry parameters",
+          "fields": [
+            {"name": "Bone Volume / Total Volume (BV/TV)", "code_name": "BvTv", "unit": "dimensionless", "description": "Volume fraction of solid phase"},
+            {"name": "Trabecular Thickness (Tb.Th)", "code_name": "TbTh", "unit": "mm", "description": "Mean thickness of solid structures"},
+            {"name": "Trabecular Separation (Tb.Sp)", "code_name": "TbSp", "unit": "mm", "description": "Mean spacing between structures"},
+            {"name": "Trabecular Number (Tb.N)", "code_name": "TbN", "unit": "mmâ»Â¹", "description": "Number of structure traversals per unit length"}
+          ]
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image to analyze.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes (required for this analysis).",
+            "tooltip": "Number of slices.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Voxel Size",
+            "code_name": "resolution",
+            "datatype": "float",
+            "description": "Physical voxel size in mm.",
+            "tooltip": "Voxel size in mm.",
+            "range": [0.0000001, 1000.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN031",
+        "display_name": "Texture Analysis (Fractal Dimension)",
+        "function_call": "p3dBlobPy.py_p3dTextureAnalysis",
+        "signature": "(image_data, dimx, dimy, dimz=0)",
+        "description": "Computes fractal dimension of the structure, a texture measure indicating structural complexity and self-similarity across scales. Values typically range from 2 (smooth surface) to 3 (space-filling).",
+        "example_usage": "texture = py_p3dTextureAnalysis(binary_image, 512, 512, 100)",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "TextureStats",
+          "description": "Texture analysis results",
+          "fields": [
+            {"name": "Fractal Dimension (FD)", "code_name": "FD", "unit": "dimensionless", "description": "Box-counting fractal dimension (typically 2-3 for 3D)"}
+          ]
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image to analyze.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN032",
+        "display_name": "Blob Analysis (Comprehensive)",
+        "function_call": "p3dBlobPy.py_p3dBlobAnalysis",
+        "signature": "(image_data, dimx, dimy, dimz=0, blob_im=None, star_im=None, resolution=1.0, conn=6, blob_analysis_file='blob_analysis.txt')",
+        "description": "Comprehensive analysis of isolated pores/particles. Computes for each blob: volume, max inscribed sphere, equivalent sphere, min/max axis lengths, sphericity, aspect ratio, and extent. Results saved to text file.",
+        "example_usage": "stats = py_p3dBlobAnalysis(binary_image, 512, 512, 100, None, None, 0.001, 6, 'results.txt')",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "BlobStats",
+          "description": "Per-blob statistics arrays",
+          "fields": [
+            {"name": "Blob Count", "code_name": "blobCount", "unit": "count", "description": "Number of identified blobs"},
+            {"name": "Volume", "code_name": "volume", "unit": "mmÂ³", "description": "Array of blob volumes"},
+            {"name": "Max Inscribed Sphere Diameter", "code_name": "max_sph", "unit": "mm", "description": "Diameter of largest sphere fitting inside each blob"},
+            {"name": "Equivalent Sphere Diameter", "code_name": "eq_sph", "unit": "mm", "description": "Diameter of sphere with same volume"},
+            {"name": "Minor Axis Length", "code_name": "l_min", "unit": "mm", "description": "Shortest axis through center of mass"},
+            {"name": "Major Axis Length", "code_name": "l_max", "unit": "mm", "description": "Longest axis through center of mass"},
+            {"name": "Sphericity", "code_name": "sphericity", "unit": "dimensionless", "description": "max_sph / eq_sph ratio"},
+            {"name": "Aspect Ratio", "code_name": "aspect_ratio", "unit": "dimensionless", "description": "l_min / l_max ratio"},
+            {"name": "Extent", "code_name": "extent", "unit": "dimensionless", "description": "Volume / bounding box volume"}
+          ]
+        },
+        "metadata": {
+          "module": "p3dBlobPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image Data",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image (255=blob, 0=background).",
+            "tooltip": "Binary image with blobs to analyze.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Blob Spheres Output Image",
+            "code_name": "blob_im",
+            "datatype": "bytearray",
+            "description": "Optional output: image with maximal inscribed spheres.",
+            "tooltip": "Output image for max spheres (optional).",
+            "range": null,
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 6,
+            "display_name": "Star Axes Output Image",
+            "code_name": "star_im",
+            "datatype": "bytearray",
+            "description": "Optional output: image showing min/max axes as 'stars'.",
+            "tooltip": "Output image for axis visualization (optional).",
+            "range": null,
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 7,
+            "display_name": "Voxel Size",
+            "code_name": "resolution",
+            "datatype": "float",
+            "description": "Physical voxel size in mm.",
+            "tooltip": "Voxel size in mm.",
+            "range": [0.0000001, 1000.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Connectivity",
+            "code_name": "conn",
+            "datatype": "int",
+            "description": "3D connectivity for blob detection.",
+            "tooltip": "Connectivity (6, 18, or 26).",
+            "allowed_values": [6, 18, 26],
+            "default": 6,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 9,
+            "display_name": "Output Statistics File",
+            "code_name": "blob_analysis_file",
+            "datatype": "string",
+            "description": "Path for tab-delimited results file.",
+            "tooltip": "Output file for blob statistics.",
+            "range": null,
+            "default": "blob_analysis.txt",
+            "required": false,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "Text Files (*.txt);;All Files (*.*)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "FN033",
+        "display_name": "Skeleton Labeling",
+        "function_call": "p3dSkelPy.py_p3dSkeletonLabeling",
+        "signature": "(image_data, dimx, dimy, dimz=0)",
+        "description": "Labels skeleton voxels by topological type: nodes (junctions), end points, isolated points, and branch types. Essential for understanding skeleton topology.",
+        "example_usage": "labeled_skel = py_p3dSkeletonLabeling(skeleton_image, 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Labeled skeleton: 1=node, 2=end, 3=isolated, 4=node-to-node, 5=node-to-end, 6=end-to-end"
+        },
+        "metadata": {
+          "module": "p3dSkelPy",
+          "category": "Skeletonization",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Skeleton Image",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary skeleton image (255=skeleton, 0=background).",
+            "tooltip": "Binary skeleton to label.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN034",
+        "display_name": "GVF Skeletonization",
+        "function_call": "p3dSkelPy.py_p3dGVFSkeletonization",
+        "signature": "(image_data, dimx, dimy, dimz=0, mu=0.15, eps=1E-4, hierarc=1.0, scale=0.0)",
+        "description": "Computes centerline skeleton using Gradient Vector Flow method. Produces smooth, well-centered skeletons. Computationally intensive but high quality.",
+        "example_usage": "skeleton = py_p3dGVFSkeletonization(binary_image, 512, 512, 100, 0.15, 1E-4, 0.0, 1.0)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary skeleton image (255=skeleton, 0=background)"
+        },
+        "metadata": {
+          "module": "p3dSkelPy",
+          "category": "Skeletonization",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image to skeletonize.",
+            "tooltip": "Binary image (255=object).",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "description": "Image width.",
+            "tooltip": "Image width.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "description": "Image height.",
+            "tooltip": "Image height.",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "description": "Depth for 3D volumes.",
+            "tooltip": "Number of slices.",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Mu (GVF smoothness)",
+            "code_name": "mu",
+            "datatype": "float",
+            "description": "Controls GVF field smoothness. Higher = smoother skeleton.",
+            "tooltip": "GVF smoothness (0.0-0.5).",
+            "range": [0.0, 0.5],
+            "default": 0.15,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Epsilon (convergence)",
+            "code_name": "eps",
+            "datatype": "float",
+            "description": "GVF convergence threshold.",
+            "tooltip": "Convergence (1E-4 typical).",
+            "range": [0.0, 0.1],
+            "default": 0.0001,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Hierarchy Threshold",
+            "code_name": "hierarc",
+            "datatype": "float",
+            "description": "Controls node-to-end branches. Higher = more branches.",
+            "tooltip": "Branch hierarchy (0.0-0.5).",
+            "range": [0.0, 1.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Scale Factor",
+            "code_name": "scale",
+            "datatype": "float",
+            "description": "Resampling factor. <1=downsample, >1=upsample.",
+            "tooltip": "Scale (0.5=half, 1.0=original).",
+            "range": [0.0, 4.0],
+            "default": 0.0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN035",
+        "display_name": "LKC Thinning Skeletonization",
+        "function_call": "p3dSkelPy.py_p3dLKCSkeletonization",
+        "signature": "(image_data, dimx, dimy, dimz=0)",
+        "description": "Computes skeleton using PalÃ¡gyi-Kuba parallel thinning. Fast and topology-preserving. Good for connectivity analysis.",
+        "example_usage": "skeleton = py_p3dLKCSkeletonization(binary_image, 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Binary skeleton image (255=skeleton, 0=background)"
+        },
+        "metadata": {
+          "module": "p3dSkelPy",
+          "category": "Skeletonization",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary input image.",
+            "tooltip": "Binary image (255=object).",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN036",
+        "display_name": "Skeleton Pruning",
+        "function_call": "p3dSkelPy.py_p3dSkeletonPruning",
+        "signature": "(image_data, dimx, dimy, dimz=0, thresh=3, ultimate=False, iterative=False)",
+        "description": "Removes spurious branches from skeleton. Simple mode removes short branches. Ultimate removes all node-to-end branches.",
+        "example_usage": "pruned = py_p3dSkeletonPruning(skeleton, 512, 512, 100, 5, False, True)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Pruned skeleton image"
+        },
+        "metadata": {
+          "module": "p3dSkelPy",
+          "category": "Skeletonization",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Skeleton Image",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Binary skeleton image to prune.",
+            "tooltip": "Skeleton to prune.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Length Threshold (voxels)",
+            "code_name": "thresh",
+            "datatype": "int",
+            "description": "Maximum length of branches to remove.",
+            "tooltip": "Prune branches shorter than this.",
+            "range": [1, 1000],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Ultimate Pruning",
+            "code_name": "ultimate",
+            "datatype": "bool",
+            "description": "Remove ALL node-to-end branches.",
+            "tooltip": "Remove all dead-end branches.",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Iterative Pruning",
+            "code_name": "iterative",
+            "datatype": "bool",
+            "description": "Repeat until stable.",
+            "tooltip": "Repeat until no changes.",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN037",
+        "display_name": "Skeleton Analysis (Comprehensive)",
+        "function_call": "p3dSkelPy.py_p3dSkeletonAnalysis",
+        "signature": "(image_data, skeleton_image, dimx, dimy, dimz=0, nodes_im=None, pores_im=None, ends_im=None, throats_im=None, merging_factor=0.85, tortuosity_depth=3, resolution=1.0, skel_stats_file='skeleton_stats.txt')",
+        "description": "Comprehensive pore network analysis. Computes connectivity density, pore sizes, throat sizes, branch lengths. Results saved to file.",
+        "example_usage": "stats = py_p3dSkeletonAnalysis(binary, skeleton, 512, 512, 100, None, None, None, None, 0.85, 3, 0.001, 'results.txt')",
+        "return_value": {
+          "type": "struct",
+          "struct_name": "SkeletonStats",
+          "description": "Comprehensive skeleton statistics"
+        },
+        "metadata": {
+          "module": "p3dSkelPy",
+          "category": "Quantitative Analysis",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Original Binary Image",
+            "code_name": "image_data",
+            "datatype": "bytearray",
+            "description": "Original binary volume.",
+            "tooltip": "Original binary image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Skeleton Image",
+            "code_name": "skeleton_image",
+            "datatype": "bytearray",
+            "description": "Skeleton of the original image.",
+            "tooltip": "Skeleton image.",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Nodes Output Image",
+            "code_name": "nodes_im",
+            "datatype": "bytearray",
+            "description": "Optional: output for node visualization.",
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 7,
+            "display_name": "Pores Output Image",
+            "code_name": "pores_im",
+            "datatype": "bytearray",
+            "description": "Optional: output for pore visualization.",
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 8,
+            "display_name": "Ends Output Image",
+            "code_name": "ends_im",
+            "datatype": "bytearray",
+            "description": "Optional: output for end point visualization.",
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 9,
+            "display_name": "Throats Output Image",
+            "code_name": "throats_im",
+            "datatype": "bytearray",
+            "description": "Optional: output for throat visualization.",
+            "default": null,
+            "required": false,
+            "is_constant": false,
+            "is_output": true
+          },
+          {
+            "order": 10,
+            "display_name": "Node Merging Factor",
+            "code_name": "merging_factor",
+            "datatype": "float",
+            "description": "Fraction for merging adjacent nodes.",
+            "tooltip": "Merging threshold (0.0-1.0).",
+            "range": [0.0, 1.0],
+            "default": 0.85,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 11,
+            "display_name": "Tortuosity Depth",
+            "code_name": "tortuosity_depth",
+            "datatype": "int",
+            "description": "Analysis depth for tortuosity.",
+            "range": [1, 10],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 12,
+            "display_name": "Voxel Size",
+            "code_name": "resolution",
+            "datatype": "float",
+            "description": "Physical voxel size in mm.",
+            "range": [0.0000001, 1000.0],
+            "default": 1.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 13,
+            "display_name": "Output Statistics File",
+            "code_name": "skel_stats_file",
+            "datatype": "string",
+            "description": "Path for results file.",
+            "default": "skeleton_stats.txt",
+            "required": false,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "Text Files (*.txt);;All Files (*.*)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "FN038",
+        "display_name": "Binary Dilation",
+        "function_call": "p3dSITKPy.py_p3d_Dilate",
+        "signature": "(input_image, dimx, dimy, dimz=0, kWidth=3)",
+        "description": "Morphological dilation expands foreground regions. Object boundaries grow outward.",
+        "example_usage": "dilated = py_p3d_Dilate(binary_image, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Dilated binary image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Morphological Operations",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Radius",
+            "code_name": "kWidth",
+            "datatype": "int",
+            "description": "Radius of structuring element.",
+            "range": [1, 51],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN039",
+        "display_name": "Binary Erosion",
+        "function_call": "p3dSITKPy.py_p3d_Erode",
+        "signature": "(input_image, dimx, dimy, dimz=0, kWidth=3)",
+        "description": "Morphological erosion shrinks foreground regions. Object boundaries recede inward.",
+        "example_usage": "eroded = py_p3d_Erode(binary_image, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Eroded binary image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Morphological Operations",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Binary Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Kernel Radius",
+            "code_name": "kWidth",
+            "datatype": "int",
+            "description": "Radius of structuring element.",
+            "range": [1, 51],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN040",
+        "display_name": "H-Minima Transform (8-bit)",
+        "function_call": "p3dSITKPy.py_p3d_HMinimaFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0, height=3)",
+        "description": "Suppresses minima shallower than specified depth. Used before watershed segmentation.",
+        "example_usage": "filtered = py_p3d_HMinimaFilter(grayscale_image, 512, 512, 100, 5)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Filtered image with shallow minima suppressed"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Grayscale Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Height Threshold",
+            "code_name": "height",
+            "datatype": "int",
+            "description": "Minimum depth for minima to survive.",
+            "range": [1, 255],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN041",
+        "display_name": "Multi-threshold Segmentation",
+        "function_call": "p3dSITKPy.py_p3d_MultiThresholding",
+        "signature": "(input_image, dimx, dimy, dimz=0, regionsNum=2)",
+        "description": "Segments image into multiple phases using Otsu multi-thresholding.",
+        "example_usage": "segmented = py_p3d_MultiThresholding(grayscale_image, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Multi-phase segmented image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Segmentation",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Grayscale Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Number of Regions",
+            "code_name": "regionsNum",
+            "datatype": "int",
+            "description": "Number of phases to segment into.",
+            "range": [2, 10],
+            "default": 2,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN042",
+        "display_name": "Gradient Magnitude Filter",
+        "function_call": "p3dSITKPy.py_p3d_GradientMagnitudeImageFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0)",
+        "description": "Computes edge strength at each pixel. High values indicate strong edges.",
+        "example_usage": "edges = py_p3d_GradientMagnitudeImageFilter(grayscale_image, 512, 512, 100)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Gradient magnitude image (edge map)"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Grayscale Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN043",
+        "display_name": "Curvature Flow Filter",
+        "function_call": "p3dSITKPy.py_p3d_CurvatureFlowImageFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0, time_step=3.0, iterations=3)",
+        "description": "Edge-preserving smoothing using level-set curvature flow.",
+        "example_usage": "smoothed = py_p3d_CurvatureFlowImageFilter(image, 512, 512, 100, 0.125, 10)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Smoothed image with preserved edges"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Time Step",
+            "code_name": "time_step",
+            "datatype": "float",
+            "description": "Evolution time step.",
+            "range": [0.01, 10.0],
+            "default": 3.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "range": [1, 100],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN044",
+        "display_name": "Gradient Anisotropic Diffusion",
+        "function_call": "p3dSITKPy.py_p3d_GradientAnisotropicDiffusionImageFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0, conductance=7.0, iterations=1)",
+        "description": "Classic anisotropic diffusion using gradient-based conductance.",
+        "example_usage": "filtered = py_p3d_GradientAnisotropicDiffusionImageFilter(image, 512, 512, 100, 3.0, 5)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Anisotropically smoothed image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Conductance",
+            "code_name": "conductance",
+            "datatype": "float",
+            "description": "Controls edge sensitivity.",
+            "range": [0.1, 50.0],
+            "default": 7.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "range": [1, 100],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN045",
+        "display_name": "Curvature Anisotropic Diffusion",
+        "function_call": "p3dSITKPy.py_p3d_CurvatureAnisotropicDiffusionImageFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0, conductance=7.0, iterations=1)",
+        "description": "Modified curvature diffusion equation. Less sensitive to contrast than gradient-based.",
+        "example_usage": "filtered = py_p3d_CurvatureAnisotropicDiffusionImageFilter(image, 512, 512, 100, 3.0, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Diffusion-filtered image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Conductance",
+            "code_name": "conductance",
+            "datatype": "float",
+            "range": [0.1, 50.0],
+            "default": 7.0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "range": [1, 100],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN046",
+        "display_name": "Min-Max Curvature Flow Filter",
+        "function_call": "p3dSITKPy.py_p3d_MinMaxCurvatureFlowImageFilter",
+        "signature": "(input_image, dimx, dimy, dimz=0, iterations=3, width=3)",
+        "description": "Variant of curvature flow with adaptive diffusion. Produces sharper edges.",
+        "example_usage": "filtered = py_p3d_MinMaxCurvatureFlowImageFilter(image, 512, 512, 100, 5, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Filtered image with sharp edges"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Advanced Filters",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Iterations",
+            "code_name": "iterations",
+            "datatype": "int",
+            "range": [1, 100],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Stencil Radius",
+            "code_name": "width",
+            "datatype": "int",
+            "range": [1, 51],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN047",
+        "display_name": "Watershed Segmentation (8-bit)",
+        "function_call": "p3dSITKPy.py_p3d_WatershedSegmentation",
+        "signature": "(input_image, dimx, dimy, dimz=0, level=0, markWatershedLine=False, connected=False)",
+        "description": "Morphological watershed segmentation. Use with gradient or distance transform.",
+        "example_usage": "segmented = py_p3d_WatershedSegmentation(distance_map, 512, 512, 100, 0.1, True, False)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Labeled segmentation image"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Segmentation",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "description": "Input image (typically distance transform or gradient).",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Flooding Level",
+            "code_name": "level",
+            "datatype": "float",
+            "description": "Minimum depth for watershed basins.",
+            "range": [0.0, 255.0],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Mark Watershed Lines",
+            "code_name": "markWatershedLine",
+            "datatype": "bool",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Fully Connected",
+            "code_name": "connected",
+            "datatype": "bool",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN048",
+        "display_name": "K-Means Clustering Segmentation",
+        "function_call": "p3dSITKPy.py_p3d_KMeansClustering",
+        "signature": "(input_image, dimx, dimy, dimz=0, segment_num=1)",
+        "description": "Unsupervised multi-phase segmentation using K-means clustering.",
+        "example_usage": "clustered = py_p3d_KMeansClustering(grayscale_image, 512, 512, 100, 3)",
+        "return_value": {
+          "type": "bytearray",
+          "description": "Labeled image with cluster assignments"
+        },
+        "metadata": {
+          "module": "p3dSITKPy",
+          "category": "Segmentation",
+          "bit_depth": "8-bit",
+          "interface_type": "memory_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Grayscale Image",
+            "code_name": "input_image",
+            "datatype": "bytearray",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 2,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 3,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Number of Clusters",
+            "code_name": "segment_num",
+            "datatype": "int",
+            "range": [1, 20],
+            "default": 1,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN049",
+        "display_name": "H-Minima Transform (16-bit, File-Based)",
+        "function_call": "p3dSITKPy_16.py_p3d_HMinimaFilter",
+        "signature": "(input_file_path, output_image_path, dimx, dimy, dimz=0, threshold=3)",
+        "description": "16-bit H-minima transform using file-based I/O. For large 16-bit datasets.",
+        "example_usage": "py_p3d_HMinimaFilter('/input/dist.raw', '/output/hmin', 512, 512, 100, 5)",
+        "return_value": {
+          "type": "sitk_image",
+          "description": "SimpleITK image object (also written to .mhd file)"
+        },
+        "metadata": {
+          "module": "p3dSITKPy_16",
+          "category": "Advanced Filters",
+          "bit_depth": "16-bit",
+          "interface_type": "file_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input File Path",
+            "code_name": "input_file_path",
+            "datatype": "string",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "input",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 2,
+            "display_name": "Output File Path (without extension)",
+            "code_name": "output_image_path",
+            "datatype": "string",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "MetaImage Files (*.mhd)"
+            }
+          },
+          {
+            "order": 3,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Height Threshold",
+            "code_name": "threshold",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": 3,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      },
+      {
+        "id": "FN050",
+        "display_name": "Watershed Segmentation (16-bit, File-Based)",
+        "function_call": "p3dSITKPy_16.py_p3d_WatershedSegmentation",
+        "signature": "(dist_file_path, watershed_image_path, dimx, dimy, dimz=0, level=0, markWatershedLine=True, connected=False)",
+        "description": "16-bit watershed segmentation using file-based I/O. For large 16-bit distance maps.",
+        "example_usage": "py_p3d_WatershedSegmentation('/input/dist.raw', '/output/watershed', 512, 512, 100, 0.5, True, False)",
+        "return_value": {
+          "type": "sitk_image",
+          "description": "SimpleITK image object (also written to .mhd file)"
+        },
+        "metadata": {
+          "module": "p3dSITKPy_16",
+          "category": "Segmentation",
+          "bit_depth": "16-bit",
+          "interface_type": "file_based"
+        },
+        "parameters": [
+          {
+            "order": 1,
+            "display_name": "Input Distance Map File",
+            "code_name": "dist_file_path",
+            "datatype": "string",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "input",
+              "file_filter": "RAW Files (*.raw);;All Files (*.*)"
+            }
+          },
+          {
+            "order": 2,
+            "display_name": "Output File Path (without extension)",
+            "code_name": "watershed_image_path",
+            "datatype": "string",
+            "range": null,
+            "default": null,
+            "required": true,
+            "is_constant": false,
+            "path_info": {
+              "path_type": "file",
+              "direction": "output",
+              "file_filter": "MetaImage Files (*.mhd)"
+            }
+          },
+          {
+            "order": 3,
+            "display_name": "Width (X dimension)",
+            "code_name": "dimx",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 4,
+            "display_name": "Height (Y dimension)",
+            "code_name": "dimy",
+            "datatype": "int",
+            "range": [1, 65535],
+            "default": null,
+            "required": true,
+            "is_constant": false
+          },
+          {
+            "order": 5,
+            "display_name": "Depth (Z dimension)",
+            "code_name": "dimz",
+            "datatype": "int",
+            "range": [0, 65535],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 6,
+            "display_name": "Flooding Level",
+            "code_name": "level",
+            "datatype": "float",
+            "range": [0.0, 65535.0],
+            "default": 0,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 7,
+            "display_name": "Mark Watershed Lines",
+            "code_name": "markWatershedLine",
+            "datatype": "bool",
+            "default": true,
+            "required": false,
+            "is_constant": false
+          },
+          {
+            "order": 8,
+            "display_name": "Fully Connected",
+            "code_name": "connected",
+            "datatype": "bool",
+            "default": false,
+            "required": false,
+            "is_constant": false
+          }
+        ]
+      }
+    ]
+  }
+}
