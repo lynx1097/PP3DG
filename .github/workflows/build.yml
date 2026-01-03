@@ -47,12 +47,8 @@ jobs:
 
       # ✅ Verify Qt BEFORE freezing
       - name: Verify PyQt6
-        run: |
-          python - <<EOF
-          from PyQt6.QtWidgets import QApplication
-          from PyQt6.QtCore import QT_VERSION_STR
-          print("Qt OK:", QT_VERSION_STR)
-          EOF
+        run: python -c "from PyQt6.QtWidgets import QApplication; from PyQt6.QtCore import QT_VERSION_STR; print('Qt OK:', QT_VERSION_STR)"
+
 
       # ✅ VC++ runtime for end users
       - name: Install VC Runtime
