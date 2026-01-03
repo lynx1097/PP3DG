@@ -31,7 +31,7 @@ DisableProgramGroupPage=yes
 ; Output
 OutputDir=installers
 OutputBaseFilename=CubeLab-{#MyAppVersion}-Windows-Setup
-SetupIconFile=src\resources\images\Icon.ico
+;SetupIconFile=src\resources\images\Icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 ; Compression
