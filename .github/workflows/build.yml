@@ -1,8 +1,3 @@
-# =====================================================
-# Cube Lab - Windows Build Pipeline
-# =====================================================
-# Creates standalone Windows installer
-
 name: Build Windows Installer
 
 on:
@@ -11,15 +6,12 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main]
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 env:
   PYTHON_VERSION: '3.12'
 
 jobs:
-  # =====================================================
-  # WINDOWS BUILD
-  # =====================================================
   build-windows:
     runs-on: windows-latest
     
@@ -27,27 +19,51 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      # FIX: Install Visual C++ Redistributable for Qt DLLs
+      # FIX 1: Install Visual C++ Redistributable
       - name: Install Visual C++ Redistributable
         run: choco install vcredist140 -y
 
+      # FIX 2: Remove problematic __init__.py files
+      - name: Remove problematic __init__.py files
+        run: |
+          if (Test-Path ".\__init__.py") { Remove-Item ".\__init__.py" -Force }
+          if (Test-Path ".\src\__init__.py") { Remove-Item ".\src\__init__.py" -Force }
+        shell: pwsh
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # FIX 3: Pin exact matching PyQt6 versions
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install PyQt6==6.6.1 PyQt6-Qt6==6.6.1
-          pip install pyinstaller>=6.0
+          pip install PyQt6==6.7.1 PyQt6-Qt6==6.7.1 PyQt6-sip==13.8.0
+          pip install pyinstaller==6.10.0
           pip install -r requirements.txt
 
       - name: Install pypore3d from TestPyPI
         run: |
           pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pypore3d
         continue-on-error: true
+
+      # FIX 4: Create runtime hook for DLL loading
+      - name: Create runtime hook
+        run: |
+          New-Item -ItemType Directory -Force -Path hooks
+          @"
+          import os
+          import sys
+          if sys.platform == 'win32':
+              if hasattr(os, 'add_dll_directory'):
+                  os.add_dll_directory(sys._MEIPASS)
+                  qt_bin = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'bin')
+                  if os.path.exists(qt_bin):
+                      os.add_dll_directory(qt_bin)
+          "@ | Out-File -FilePath hooks/rthook_pyqt6.py -Encoding utf8
+        shell: pwsh
 
       - name: Build CubeLab
         run: pyinstaller --clean --noconfirm cubelab.spec
@@ -83,9 +99,6 @@ jobs:
             installers/*.zip
           retention-days: 30
 
-  # =====================================================
-  # RELEASE
-  # =====================================================
   release:
     needs: [build-windows]
     if: startsWith(github.ref, 'refs/tags/v')
@@ -99,9 +112,6 @@ jobs:
         with:
           path: artifacts/
 
-      - name: List files
-        run: find artifacts/ -type f
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -109,5 +119,5 @@ jobs:
             artifacts/**/*.exe
             artifacts/**/*.zip
           draft: false
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          prerelease: $ contains(github.ref, '-alpha') || contains(github.ref, '-beta') 
           generate_release_notes: true

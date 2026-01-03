@@ -1,5 +1,12 @@
 import os
 import sys
+
+if getattr(sys, 'frozen', False):
+    os.environ['QT_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins')
+    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins', 'platforms')
+
+os.environ['QT_API'] = 'pyqt6'
+
 import json
 import time
 import datetime
@@ -20,13 +27,7 @@ from PyQt6.QtGui import QColor, QPalette, QPainter, QPen, QBrush, QIcon
 import GUI
 import DiagnosticModule as diag
 
-# Fix for frozen app finding Qt plugins
-if getattr(sys, 'frozen', False):
-    os.environ['QT_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins')
-    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(sys._MEIPASS, 'PyQt6', 'Qt6', 'plugins', 'platforms')
 
-# Set Qt API for pyvista/pyvistaqt compatibility
-os.environ['QT_API'] = 'pyqt6'
 
 
 

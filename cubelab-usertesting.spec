@@ -127,7 +127,7 @@ a = Analysis(
     hiddenimports=hidden_imports,
     hookspath=['hooks'],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['hooks/rthook_pyqt6.py'],  # ← ADD THIS LINE
     excludes=[
         'tkinter', 
         'matplotlib', 
