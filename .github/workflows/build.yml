@@ -156,7 +156,7 @@ jobs:
             libglu1-mesa-dev \
             libxcb-xinerama0 \
             libxkbcommon-x11-0 \
-            libegl1-mesa \
+            libegl1 \
             libxcb-cursor0 \
             fuse \
             libfuse2
