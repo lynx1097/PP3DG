@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
     def load_visual_context(self):
         try:
             if CONTEXT_FILE.exists():
-                with open(CONTEXT_FILE, 'r') as f:
+                with open(CONTEXT_FILE, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
             print(f"Context Load Error: {e}")

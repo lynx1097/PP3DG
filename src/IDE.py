@@ -681,7 +681,7 @@ class SmartIDEWidget(QWidget):
     def load_library(self):
         global global_library; script_dir = os.path.dirname(os.path.abspath(__file__)); json_path = os.path.join(script_dir, 'pypore3d_function_reference.json')
         if not os.path.exists(json_path): QMessageBox.critical(self, "Error", "pypore3d_function_reference.json not found!"); sys.exit(1)
-        with open(json_path, 'r') as f: data = json.load(f)
+        with open(json_path, 'r', encoding='utf-8') as f: data = json.load(f)
         global_library = FunctionLibrary(data)
 
     def init_ui(self):
@@ -937,7 +937,7 @@ class SmartIDEWidget(QWidget):
     def save_file(self):
         fname, _ = QFileDialog.getSaveFileName(self, "Save", "", "Code (*.py *.txt)")
         if fname:
-            with open(fname, 'w') as f: f.write(self.editor.text())
+            with open(fname, 'w', encoding='utf-8') as f: f.write(self.editor.text())
             self.toast.show_message(f"Saved to: {os.path.basename(fname)}")
     def toggle_theme(self): self.is_dark_mode = not self.is_dark_mode; self.apply_theme()
     def apply_theme(self):
