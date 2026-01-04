@@ -66,7 +66,7 @@ if errorlevel 1 (
 )
 
 echo        Building CubeLab-UserTesting...
-pyinstaller --clean --noconfirm cubelab-usertesting.spec
+pyinstaller --clean --noconfirm --onefile --console cubelab-usertesting.spec
 if errorlevel 1 (
     echo [ERROR] CubeLab-UserTesting build failed
     pause
