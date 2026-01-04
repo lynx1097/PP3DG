@@ -1,7 +1,23 @@
 import sys
 import os
+import ctypes
+# 1. Force load the core Windows library that handles DLLs
+try:
+    ctypes.windll.kernel32.SetDefaultDllDirectories(0x00000800) # LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+except Exception:
+    pass
 
+# 2. Manually point Python to the bundled Qt binaries
+if getattr(sys, 'frozen', False):
+    # If running as EXE
+    base_path = sys._MEIPASS
+else:
+    # If running as script
+    base_path = os.path.dirname(__file__)
 
+qt_dir = os.path.join(base_path, "PyQt6", "Qt6", "bin")
+if os.path.exists(qt_dir):
+    os.add_dll_directory(qt_dir)
 # ============================================
 # CRITICAL: Set up paths BEFORE any Qt imports
 # ============================================

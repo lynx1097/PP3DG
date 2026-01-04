@@ -184,10 +184,14 @@ datas = [
 a = Analysis(
     [str(SRC_DIR / ENTRY_SCRIPT)],
     pathex=[str(SRC_DIR)],
-    binaries=all_binaries,
+    binaries=[
+        # Use the system compatibility DLLs if SDK is missing
+        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
+        ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
+    ],
     datas=datas,
     hiddenimports=hidden_imports,
-    hookspath=[],
+    hookspath=['hooks'],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
