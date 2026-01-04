@@ -120,8 +120,32 @@ class MainWindow(QMainWindow):
         chat_layout = QHBoxLayout(chat_panel)
         chat_layout.setContentsMargins(0, 0, 0, 0)
         
+        # ==========================================================
+        # FIXED: Unified Cross-Platform Stylesheet for Send Panel
+        # ==========================================================
         send_panel = QWidget()
-        send_panel.setStyleSheet("background-color: darkyellow;")
+        send_panel.setObjectName("ChatInputPanel")
+        
+        # This stylesheet explicitly sets background and text colors to avoid
+        # Windows system theme interference.
+        send_panel.setStyleSheet("""
+            QWidget#ChatInputPanel { 
+                background-color: #f0f0f0; 
+                border-right: 1px solid #cccccc;
+            }
+            QLabel { 
+                color: #333333; 
+                font-weight: bold;
+            }
+            QTextEdit { 
+                background-color: #ffffff; 
+                color: #000000; 
+                border: 1px solid #bbbbbb; 
+                border-radius: 4px;
+                padding: 4px;
+            }
+        """)
+        
         send_layout = QVBoxLayout(send_panel)
         
         # --- HEADER ---
@@ -132,8 +156,19 @@ class MainWindow(QMainWindow):
         self.btn_vision = QPushButton("Where Can I find...?")
         self.btn_vision.setCheckable(True)
         self.btn_vision.setStyleSheet("""
-            QPushButton { background-color: #444; color: white; border-radius: 4px; padding: 4px; font-weight: bold; }
-            QPushButton:checked { background-color: #2e7d32; border: 1px solid #0f0; }
+            QPushButton { 
+                background-color: #555555; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 4px; 
+                font-weight: bold; 
+                border: none;
+            }
+            QPushButton:hover { background-color: #666666; }
+            QPushButton:checked { 
+                background-color: #2e7d32; 
+                border: 1px solid #0f0; 
+            }
         """)
         self.btn_vision.setToolTip("Enable Visual UI Guidance Mode")
         
@@ -158,12 +193,45 @@ class MainWindow(QMainWindow):
         
         self.send_button = QPushButton("Send")
         self.send_button.setFont(QFont("Segoe UI", 10))
+        # Fixed Button Style
+        self.send_button.setStyleSheet("""
+            QPushButton {
+                background-color: #0078d4;
+                color: white;
+                border: none;
+                padding: 6px;
+                border-radius: 4px;
+            }
+            QPushButton:hover { background-color: #005a9e; }
+            QPushButton:pressed { background-color: #004578; }
+            QPushButton:disabled { background-color: #cccccc; color: #888888; }
+        """)
     
         self.send_button.clicked.connect(self.agent_request)
         send_layout.addWidget(self.send_button)
         
+        # ==========================================================
+        # FIXED: Unified Cross-Platform Stylesheet for Response Panel
+        # ==========================================================
         self.response_panel = QWidget()
-        self.response_panel.setStyleSheet("background-color: darkyellow;")
+        self.response_panel.setObjectName("ChatResponsePanel")
+        
+        self.response_panel.setStyleSheet("""
+            QWidget#ChatResponsePanel { 
+                background-color: #ffffff; 
+            }
+            QLabel { 
+                color: #333333; 
+            }
+            QTextBrowser { 
+                background-color: #fafafa; 
+                color: #1a1a1a; 
+                border: 1px solid #eeeeee; 
+                border-radius: 4px;
+                padding: 4px;
+            }
+        """)
+        
         response_layout = QVBoxLayout(self.response_panel)
         
         response_label = QLabel("CL Response")
@@ -177,6 +245,18 @@ class MainWindow(QMainWindow):
         
         self.clear_button = QPushButton("Clear")
         self.clear_button.setFont(QFont("Segoe UI", 10))
+        # Fixed Button Style (Matches Send Button)
+        self.clear_button.setStyleSheet("""
+            QPushButton {
+                background-color: #0078d4;
+                color: white;
+                border: none;
+                padding: 6px;
+                border-radius: 4px;
+            }
+            QPushButton:hover { background-color: #005a9e; }
+            QPushButton:pressed { background-color: #004578; }
+        """)
         self.clear_button.clicked.connect(self.clear_chat)
         response_layout.addWidget(self.clear_button)
         

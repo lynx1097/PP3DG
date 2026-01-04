@@ -176,13 +176,16 @@ datas = [
 # ============================================
 # STEP 6: Analysis
 # ============================================
+my_binaries = []
+if sys.platform == 'win32':
+    my_binaries = [
+        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
+        ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
+    ]
 a = Analysis(
     [str(SRC_DIR / ENTRY_SCRIPT)],
     pathex=[str(SRC_DIR)],
-    binaries=[
-        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
-        ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
-    ],
+    binaries=my_binaries,
     datas=datas,
     hiddenimports=hidden_imports,
     hookspath=['hooks'],
