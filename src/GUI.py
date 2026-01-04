@@ -58,6 +58,11 @@ os.environ['QT_API'] = 'pyqt6'
 os.environ.pop("QT_PLUGIN_PATH", None)
 os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Now import everything else
 import json

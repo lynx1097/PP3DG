@@ -9,7 +9,12 @@ import tempfile
 import datetime
 import ast
 from pathlib import Path
+os.environ["PYTHONIOENCODING"] = "utf-8"
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
     QPushButton, QFileDialog, QTabWidget, QMessageBox, QLabel,

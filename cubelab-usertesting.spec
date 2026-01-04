@@ -193,7 +193,7 @@ a = Analysis(
     hiddenimports=hidden_imports,
     hookspath=['hooks'],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=["utf8_runtime_hook.py"],
     excludes=[
         'tkinter', '_tkinter',
         'scipy',
