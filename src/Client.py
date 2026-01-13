@@ -35,7 +35,7 @@ class CodeFix(BaseModel):
 # --- KEY MANAGER ---
 class KeyManager:
     def __init__(self):
-        self.keys = [k for k in [os.getenv("GEMINI_API_KEY"), os.getenv("GEMINI_API_KEY_2")] if k]
+        self.keys = [k for k in [os.getenv("GEMINI_API_KEY"), os.getenv("GEMINI_API_KEY_2"), os.getenv("GEMINI_API_KEY_3")] if k]
         self.current_index = 0
 
     def get_current_key(self):

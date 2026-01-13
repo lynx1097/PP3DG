@@ -65,10 +65,10 @@ all_datas += d
 all_binaries += b
 all_hiddenimports += h
 # ============================================
-# STEP 3: Collect PyQt6 MANUALLY (most reliable)
+# STEP 3: Collect PyQt6 (Platform Specific)
 # ============================================
-# CHANGE: Only run this manual hack on Windows. 
-# On macOS, this causes duplicate copies of Frameworks (FileExistsError).
+
+# 1. Windows: Manual collection (Required for stability)
 if sys.platform == 'win32':
     try:
         from PyInstaller.utils.hooks import get_package_paths
@@ -78,7 +78,6 @@ if sys.platform == 'win32':
         qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
         if os.path.isdir(qt_plugins):
             all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
-            print(f"[OK] Added Qt6 plugins from {qt_plugins}")
         
         # Collect ALL DLLs from Qt6/bin
         qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
@@ -87,17 +86,20 @@ if sys.platform == 'win32':
                 if f.endswith('.dll'):
                     src = os.path.join(qt_bin, f)
                     all_binaries.append((src, '.'))
-            print(f"[OK] Added Qt6 DLLs from {qt_bin}")
-            
     except Exception as e:
         print(f"[WARN] PyQt6 manual collection failed: {e}")
 
-# Also use collect_all for PyQt6 as backup
-d, b, h = safe_collect('PyQt6')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
+    # Windows also needs collect_all as a backup
+    d, b, h = safe_collect('PyQt6')
+    all_datas += d
+    all_binaries += b
+    all_hiddenimports += h
 
+# 2. macOS / Linux: DO NOT use collect_all('PyQt6')
+# PyInstaller's built-in hooks handle Frameworks correctly.
+# Using collect_all here causes "FileExistsError" on macOS due to symlink collisions.
+else:
+    print("[INFO] Skipping manual PyQt6 collection for macOS/Linux to prevent symlink errors.")
 # ============================================
 # STEP 4: Define ALL hidden imports explicitly
 # ============================================
