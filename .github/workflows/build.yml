@@ -13,7 +13,7 @@ env:
 
 jobs:
   # ===================================================
-  # 1. WINDOWS BUILD (Your existing workflow)
+  # 1. WINDOWS BUILD
   # ===================================================
   build-windows:
     name: Build Windows
@@ -33,7 +33,6 @@ jobs:
           pip install -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/
 
       - name: Build with PyInstaller
-        # Only building the main one for brevity, add the UserTesting one if needed
         run: |
           pyinstaller --clean --noconfirm cubelab-usertesting.spec
           pyinstaller --clean --noconfirm cubelab.spec
@@ -47,19 +46,31 @@ jobs:
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
         continue-on-error: true
 
+      - name: Verify & Zip Windows
+        shell: pwsh
+        run: |
+          if (Test-Path "dist\CubeLab-UserTesting\CubeLab-UserTesting.exe") { Write-Host "Build OK" } else { Write-Error "Build Failed" }
+          Compress-Archive -Path "dist\CubeLab-UserTesting\*" -DestinationPath "installers\CubeLab-UserTesting-Windows.zip" -Force
+
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-installers
-          path: installers/*.exe
+          path: |
+            installers/*.exe
+            installers/*.zip
           retention-days: 10
 
   # ===================================================
-  # 2. MACOS BUILD (Monterey+)
+  # 2. MACOS BUILD
   # ===================================================
   build-macos:
-    name: Build macOS (Monterey+)
-    runs-on: macos-12 # Uses Intel runner (Monterey), compatible with Apple Silicon via Rosetta
+    name: Build macOS
+    # We use macos-13 (Intel) because macos-latest is Apple Silicon (ARM).
+    # Building on Intel allows the app to run on BOTH Intel and Apple Silicon (via Rosetta).
+    runs-on: macos-13
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '12.0' # Ensures compatibility back to macOS Monterey
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +80,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Create-DMG
+      - name: Install Tools
         run: brew install create-dmg
 
       - name: Run Build Script
@@ -85,11 +96,11 @@ jobs:
           retention-days: 10
 
   # ===================================================
-  # 3. LINUX BUILD (AppImage)
+  # 3. LINUX BUILD
   # ===================================================
   build-linux:
     name: Build Linux
-    runs-on: ubuntu-20.04 # Older Ubuntu = Better AppImage compatibility (glibc)
+    runs-on: ubuntu-22.04 # Newer Ubuntu as requested
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -100,15 +111,14 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install System Dependencies
-        # We manually install the libs your script checks for to prevent failure
+        # libfuse2 is NOT included in Ubuntu 22.04+ by default but is required for AppImage
         run: |
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-dev libxcb-xinerama0 libxkbcommon-x11-0 libfuse2
 
       - name: Run Build Script
-        # APPIMAGE_EXTRACT_AND_RUN is required for appimagetool to run inside GitHub Actions CI
         env:
-          APPIMAGE_EXTRACT_AND_RUN: 1
+          APPIMAGE_EXTRACT_AND_RUN: 1 # Required for appimagetool to run in CI
         run: |
           chmod +x build_linux.sh
           ./build_linux.sh
