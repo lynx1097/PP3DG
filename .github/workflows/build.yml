@@ -68,7 +68,7 @@ jobs:
     name: Build macOS
     # We use macos-13 (Intel) because macos-latest is Apple Silicon (ARM).
     # Building on Intel allows the app to run on BOTH Intel and Apple Silicon (via Rosetta).
-    runs-on: macos-13
+    runs-on: macos-15
     env:
       MACOSX_DEPLOYMENT_TARGET: '12.0' # Ensures compatibility back to macOS Monterey
     steps:
@@ -79,6 +79,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          architecture: 'x64'
 
       - name: Install Tools
         run: brew install create-dmg
