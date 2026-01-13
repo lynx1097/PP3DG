@@ -2,7 +2,7 @@
 
 Creates **fully standalone installers** that require **zero user interaction** with dependencies.
 
-## 🎯 What This Creates
+# 🎯 What This Creates
 
 | Platform | Output | User Experience |
 |----------|--------|-----------------|
