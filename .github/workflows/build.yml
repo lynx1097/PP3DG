@@ -1,23 +1,22 @@
-name: Build & Release Suite
+name: Build & Release Suite (No Storage Usage)
 
 on:
   push:
     branches: [main]
-    tags: ['v*'] # Triggers release when you push a tag like v1.0
+    tags: ['v*'] # Triggers on tags like v1.0
   pull_request:
     branches: [main]
   workflow_dispatch:
 
-# Critical: Allows the workflow to create Releases and upload assets
 permissions:
-  contents: write
+  contents: write # Required to upload to Releases
 
 env:
   PYTHON_VERSION: '3.11'
 
 jobs:
   # ===================================================
-  # 1. MACOS BUILD (Universal Intel/ARM DMG)
+  # 1. MACOS BUILD & UPLOAD
   # ===================================================
   build-macos:
     name: Build macOS
@@ -32,7 +31,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: 'x64' # Forces Intel build (runs on both Intel & Apple Silicon)
+          architecture: 'x64'
 
       - name: Install Dependencies
         run: |
@@ -52,15 +51,17 @@ jobs:
             "installers/CubeLab-Suite-macOS.dmg" \
             "dist/CubeLab_Suite/"
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      # DIRECT UPLOAD: Bypasses Artifact Storage Limit
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
-          name: macos-installer
-          path: installers/*.dmg
-          retention-days: 1
+          files: installers/CubeLab-Suite-macOS.dmg
+          draft: false
+          prerelease: false
 
   # ===================================================
-  # 2. LINUX BUILD (Ubuntu 22.04 Tarball)
+  # 2. LINUX BUILD & UPLOAD
   # ===================================================
   build-linux:
     name: Build Linux
@@ -91,18 +92,19 @@ jobs:
         run: |
           mkdir -p installers
           cd dist
-          # Compress to .tar.gz for release
           tar -czvf ../installers/CubeLab-Suite-Linux.tar.gz CubeLab_Suite/
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      # DIRECT UPLOAD: Bypasses Artifact Storage Limit
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
-          name: linux-installer
-          path: installers/*.tar.gz
-          retention-days: 1
+          files: installers/CubeLab-Suite-Linux.tar.gz
+          draft: false
+          prerelease: false
 
   # ===================================================
-  # 3. WINDOWS BUILD (Portable Zip)
+  # 3. WINDOWS BUILD & UPLOAD
   # ===================================================
   build-windows:
     name: Build Windows
@@ -127,48 +129,13 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path installers
-          # Create a Zip file for the GitHub Release (Releases cannot accept raw folders)
           Compress-Archive -Path "dist\CubeLab_Suite\*" -DestinationPath "installers\CubeLab-Suite-Windows.zip" -Force
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: installers/*.zip
-          retention-days: 1
-
-  # ===================================================
-  # 4. PUBLISH RELEASE
-  # ===================================================
-  publish-release:
-    name: Publish Release
-    needs: [build-macos, build-linux, build-windows] # Waits for all builds to finish
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') # Only run if tag starts with 'v'
-    
-    steps:
-      - name: Download macOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-installer
-          path: release_assets
-
-      - name: Download Linux Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-installer
-          path: release_assets
-
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-installer
-          path: release_assets
-
-      - name: Create GitHub Release
+      # DIRECT UPLOAD: Bypasses Artifact Storage Limit
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: release_assets/*
+          files: installers/CubeLab-Suite-Windows.zip
           draft: false
           prerelease: false
-          generate_release_notes: true
