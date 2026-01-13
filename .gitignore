@@ -32,3 +32,5 @@ Thumbs.db
 
 # Keep these
 !installers/*.iss
+/oldbuild
+._cubelab.spec
