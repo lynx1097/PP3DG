@@ -64,31 +64,33 @@ d, b, h = safe_collect('pydantic')
 all_datas += d
 all_binaries += b
 all_hiddenimports += h
-
 # ============================================
 # STEP 3: Collect PyQt6 MANUALLY (most reliable)
 # ============================================
-try:
-    from PyInstaller.utils.hooks import get_package_paths
-    _, qt_path = get_package_paths('PyQt6')
-    
-    # Collect Qt6 plugins directory
-    qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
-    if os.path.isdir(qt_plugins):
-        all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
-        print(f"[OK] Added Qt6 plugins from {qt_plugins}")
-    
-    # Collect ALL DLLs from Qt6/bin
-    qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
-    if os.path.isdir(qt_bin):
-        for f in os.listdir(qt_bin):
-            if f.endswith('.dll'):
-                src = os.path.join(qt_bin, f)
-                all_binaries.append((src, '.'))
-        print(f"[OK] Added Qt6 DLLs from {qt_bin}")
+# CHANGE: Only run this manual hack on Windows. 
+# On macOS, this causes duplicate copies of Frameworks (FileExistsError).
+if sys.platform == 'win32':
+    try:
+        from PyInstaller.utils.hooks import get_package_paths
+        _, qt_path = get_package_paths('PyQt6')
         
-except Exception as e:
-    print(f"[WARN] PyQt6 manual collection failed: {e}")
+        # Collect Qt6 plugins directory
+        qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
+        if os.path.isdir(qt_plugins):
+            all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
+            print(f"[OK] Added Qt6 plugins from {qt_plugins}")
+        
+        # Collect ALL DLLs from Qt6/bin
+        qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
+        if os.path.isdir(qt_bin):
+            for f in os.listdir(qt_bin):
+                if f.endswith('.dll'):
+                    src = os.path.join(qt_bin, f)
+                    all_binaries.append((src, '.'))
+            print(f"[OK] Added Qt6 DLLs from {qt_bin}")
+            
+    except Exception as e:
+        print(f"[WARN] PyQt6 manual collection failed: {e}")
 
 # Also use collect_all for PyQt6 as backup
 d, b, h = safe_collect('PyQt6')
@@ -203,6 +205,13 @@ a = Analysis(
         'IPython', 'jupyter', 'notebook',
         'pytest',
         'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
+        'PyQt6.QtBluetooth',
+        'PyQt6.QtNfc',
+        'PyQt6.QtSensors',
+        'PyQt6.QtSerialPort',
+        'PyQt6.QtWebEngine',
+        'PyQt6.QtWebEngineCore',
+        'PyQt6.QtWebEngineWidgets',
     ],
     noarchive=False,
     optimize=0,
