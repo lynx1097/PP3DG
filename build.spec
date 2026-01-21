@@ -119,6 +119,7 @@ safe_excludes = [
 # STEP 4: Define ALL hidden imports explicitly
 # ============================================
 hidden_imports = [
+    'pyparsing',
     # Application modules
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     
