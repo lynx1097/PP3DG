@@ -304,5 +304,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name='CubeLab_Suite', # Name of the output folder
+    
 )
