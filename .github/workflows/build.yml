@@ -2,10 +2,10 @@ name: Build & Release Suite (No Storage Usage)
 
 on:
   push:
-    branches: [main]
+    #branches: [main]
     tags: ['v*'] # Triggers on tags like v1.0
-  pull_request:
-    branches: [main]
+  #pull_request:
+    #branches: [main]
   workflow_dispatch:
 
 permissions:

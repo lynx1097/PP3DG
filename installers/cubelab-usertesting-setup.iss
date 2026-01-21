@@ -3,8 +3,8 @@
 ; =====================================================
 
 #define MyAppName "Cube Lab - User Testing"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "Cube Lab Team"
+#define MyAppVersion "0.1"
+#define MyAppPublisher "Abdelrahman Fadel"
 #define MyAppURL "https://github.com/cubelab"
 #define MyAppExeName "CubeLab-UserTesting.exe"
 
@@ -47,7 +47,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "..\dist\CubeLab-UserTesting\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\CubeLab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

@@ -291,18 +291,14 @@ exe2 = EXE(
 )
 
 # COLLECT: Bundles both EXEs into ONE folder with shared libraries
+
 coll = COLLECT(
     exe1,
     a1.binaries, a1.datas,
-    
     exe2,
-    # Note: We don't need a2.binaries/datas here if they are identical, 
-    # but passing them ensures unique deps from the second script are included.
-    # COLLECT automatically removes duplicates.
     a2.binaries, a2.datas,
-    
     strip=False,
     upx=False,
     upx_exclude=[],
-    
+    name='CubeLab',
 )

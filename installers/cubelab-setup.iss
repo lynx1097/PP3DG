@@ -3,8 +3,8 @@
 ; =====================================================
 
 #define MyAppName "Cube Lab"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "Cube Lab Team"
+#define MyAppVersion "0.1"
+#define MyAppPublisher "Abdelrahman Fadel"
 #define MyAppURL "https://github.com/cubelab"
 #define MyAppExeName "CubeLab.exe"
 
