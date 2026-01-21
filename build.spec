@@ -2,7 +2,7 @@
 import sys
 import os
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_data_files, copy_metadata
 
 BASE_DIR = Path(SPECPATH)
 SRC_DIR = BASE_DIR / "src"
@@ -56,6 +56,7 @@ d, b, h = safe_collect('pydantic')
 all_datas += d
 all_binaries += b
 all_hiddenimports += h
+
 
 # ============================================
 # STEP 3: Collect PyQt6 (Platform Specific)
@@ -191,7 +192,12 @@ datas = [
     (str(SRC_DIR / 'visual_context.json'), '.'),
     (str(SRC_DIR / 'resources'), 'resources'),
 ] + all_datas
+# ... existing collections ...
 
+# [Fix] Collect metadata for libraries that check versions at runtime
+datas += copy_metadata('pyparsing')
+datas += copy_metadata('packaging')
+datas += copy_metadata('google.genai') 
 # =========================================================
 # 2. ANALYSIS (Process both scripts)
 # =========================================================
