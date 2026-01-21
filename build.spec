@@ -197,7 +197,6 @@ datas = [
 # [Fix] Collect metadata for libraries that check versions at runtime
 datas += copy_metadata('pyparsing')
 datas += copy_metadata('packaging')
-datas += copy_metadata('google.genai') 
 # =========================================================
 # 2. ANALYSIS (Process both scripts)
 # =========================================================
