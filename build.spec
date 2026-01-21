@@ -240,7 +240,7 @@ for item in a1.binaries:
     if name not in seen_binaries1:
         seen_binaries1.add(name)
         unique_binaries1.append(item)
-a1.binaries = 
+a1.binaries = unique_binaries1
 
 for item in a2.binaries:
     name = item[0]
