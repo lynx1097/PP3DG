@@ -26,7 +26,7 @@ def safe_collect(package_name):
         print(f"[SKIP] {package_name}: {e}")
         return [], [], []
 
-for pkg in ['pyvista', 'pyvistaqt', 'pypore3d', 'pydantic']:
+for pkg in ['pyvista', 'pyvistaqt', 'pypore3d', 'pydantic', 'setuptools']:
     d, b, h = safe_collect(pkg)
     all_datas += d
     all_binaries += b
@@ -123,11 +123,7 @@ hidden_imports = [
     'numpy.core._methods',
     'numpy.core._dtype_ctypes',
     
-    'jaraco',
-    'jaraco.text',
-    'jaraco.classes',
-    'jaraco.functools',
-    'jaraco.context',
+    
 
     # PIL
     'PIL.Image',
