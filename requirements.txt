@@ -31,3 +31,5 @@ psutil==5.9.8
 
 # Telemetry
 newrelic-telemetry-sdk==0.5.1
+
+jaraco
