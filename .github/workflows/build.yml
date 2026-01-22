@@ -44,7 +44,7 @@ jobs:
       - name: Create Windows Installers
         shell: cmd
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-setup.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
         continue-on-error: true
 
 

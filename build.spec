@@ -68,18 +68,32 @@ if sys.platform == 'win32':
         from PyInstaller.utils.hooks import get_package_paths
         _, qt_path = get_package_paths('PyQt6')
         
-        # Collect Qt6 plugins directory
+        # Only collect essential Qt6 plugins
+        essential_plugins = ['platforms', 'styles', 'imageformats']
         qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
-        if os.path.isdir(qt_plugins):
-            all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
         
-        # Collect ALL DLLs from Qt6/bin
+        if os.path.isdir(qt_plugins):
+            for plugin in essential_plugins:
+                plugin_dir = os.path.join(qt_plugins, plugin)
+                if os.path.isdir(plugin_dir):
+                    all_datas.append((plugin_dir, os.path.join('PyQt6', 'Qt6', 'plugins', plugin)))
+        
+        # Only collect ESSENTIAL Qt6 DLLs (not ALL)
+        essential_dlls = [
+            'Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll',
+            'Qt6OpenGL.dll', 'Qt6OpenGLWidgets.dll', 'Qt6Svg.dll',
+            'Qt6Network.dll', 'Qt6PrintSupport.dll'
+        ]
+        
         qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
         if os.path.isdir(qt_bin):
-            for f in os.listdir(qt_bin):
-                if f.endswith('.dll'):
-                    src = os.path.join(qt_bin, f)
-                    all_binaries.append((src, '.'))
+            for dll_name in essential_dlls:
+                dll_path = os.path.join(qt_bin, dll_name)
+                if os.path.exists(dll_path):
+                    all_binaries.append((dll_path, '.'))
+        
+        print(f"[OK] Added essential Qt6 plugins and DLLs")
+        
     except Exception as e:
         print(f"[WARN] PyQt6 manual collection failed: {e}")
 else:
@@ -96,40 +110,49 @@ if sys.platform == 'win32':
 
 # Excludes: Aggressive cleanup to save space safely
 safe_excludes = [
-    # GUI Frameworks we don't use
+    # GUI Frameworks you DON'T use
     'tkinter', '_tkinter', 'tcl', 'tk',
     'PySide2', 'PySide6', 'wx', 'Gtk', 'GTK3',
     
-    # Heavy SciPy/Pandas if not used (remove if you need them!)
-    'scipy', 'pandas', 'notebook', 'jupyter', 'IPython',
-    'matplotlib.tests', 'numpy.tests',
+    # Scientific packages you DON'T import
+    'scipy', 'pandas', 'matplotlib',
+    'notebook', 'jupyter', 'IPython',
+    'sklearn', 'tensorflow', 'torch',
     
-    # Qt Bloatware (Safe to remove if not using Web/NFC/Bluetooth)
+    # Test frameworks
+    'pytest', 'unittest', 'nose',
+    'numpy.tests', 'pyvista.tests',
+    
+    # Qt modules you DON'T use (CRITICAL for size reduction)
     'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
     'PyQt6.QtBluetooth', 'PyQt6.QtNfc', 'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
-    'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtMultimedia',
-    'PyQt6.QtMultimediaWidgets', 'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets',
-    'PyQt6.QtQml', 'PyQt6.uic',
+    'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+    'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
+    'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets', 'PyQt6.QtQml',
+    'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
     
-    # Standard Lib Bloat
+    # VTK modules you don't use
+    'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
+    'vtkmodules.vtkDomainsChemistry', 'vtkmodules.vtkGeovisCore',
+    'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkInfovisCore',
+    'vtkmodules.vtkIOParallel', 'vtkmodules.vtkParallelCore',
+    
+    # Trame (web-based VTK - you don't use)
     'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
-
-    'curses', 'html', 'unittest', 'pydoc', 'xml.dom.domreg',
+    
+    # Standard library bloat
+    'curses', 'pydoc', 'doctest',
+    'xml.dom.domreg', 'xml.sax', 'html.parser',
 ]
+
 # ============================================
 # STEP 4: Define ALL hidden imports explicitly
 # ============================================
 hidden_imports = [
-    'setuptools',
-    'pkg_resources.extern',
-    'pkg_resources._vendor.pyparsing',
-    'pkg_resources._vendor.packaging',
-    'pkg_resources._vendor.packaging.requirements',
-    # Application modules
+    # Your application modules
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     
-    # PyQt6 - EVERY module
-    'PyQt6',
+    # PyQt6 - ONLY modules you import
     'PyQt6.QtCore',
     'PyQt6.QtGui',
     'PyQt6.QtWidgets',
@@ -141,19 +164,16 @@ hidden_imports = [
     'PyQt6.QtNetwork',
     'PyQt6.QtPrintSupport',
     
-    # NumPy
-    'numpy',
-    'numpy.core',
+    # NumPy essentials
     'numpy.core._methods',
     'numpy.core._dtype_ctypes',
-    'numpy.lib.format',
     
     # PIL
-    'PIL',
     'PIL.Image',
     
-    # Google
+    # Google GenAI
     'google.genai',
+    'google.generativeai',
     
     # Pydantic
     'pydantic',
@@ -162,11 +182,8 @@ hidden_imports = [
     # System
     'psutil',
     'dotenv',
-    'json',
-    'tempfile',
-    'pathlib',
     
-    # Telemetry
+    # Telemetry (if you actually use it)
     'newrelic_telemetry_sdk',
     
     # pypore3d
@@ -176,8 +193,7 @@ hidden_imports = [
     'pypore3d.p3dBlobPy',
     'pypore3d.p3dSkelPy',
     
-    # VTK
-    'vtkmodules',
+    # VTK essentials
     'vtkmodules.all',
     'vtkmodules.util.numpy_support',
     'vtkmodules.qt.QVTKRenderWindowInteractor',
@@ -196,11 +212,7 @@ datas = [
     (str(SRC_DIR / 'visual_context.json'), '.'),
     (str(SRC_DIR / 'resources'), 'resources'),
 ] + all_datas
-# ... existing collections ...
 
-# [Fix] Collect metadata for libraries that check versions at runtime
-datas += copy_metadata('pyparsing')
-datas += copy_metadata('packaging')
 # =========================================================
 # 2. ANALYSIS (Process both scripts)
 # =========================================================

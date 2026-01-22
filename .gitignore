@@ -34,3 +34,4 @@ Thumbs.db
 !installers/*.iss
 /oldbuild
 ._cubelab.spec
+imports

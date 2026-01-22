@@ -20,7 +20,6 @@ vtk==9.2.6
 # Data Processing
 numpy==1.26.4
 Pillow==10.2.0
-matplotlib==3.7.0
 
 # AI Integration
 google-generativeai==0.3.2
