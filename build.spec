@@ -95,12 +95,9 @@ safe_excludes = [
     # Trame
     'trame*',
 
-    
-  
-    
     # Standard library bloat
     'curses', 'pydoc', 'doctest',
-    'xml.dom.domreg', 'xml.sax', 'html.parser',
+    'xml.dom.domreg', 'html.parser',
 ]
 
 # ============================================
@@ -126,6 +123,12 @@ hidden_imports = [
     'numpy.core._methods',
     'numpy.core._dtype_ctypes',
     
+    'jaraco',
+    'jaraco.text',
+    'jaraco.classes',
+    'jaraco.functools',
+    'jaraco.context',
+
     # PIL
     'PIL.Image',
     
