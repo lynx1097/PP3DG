@@ -190,6 +190,7 @@ Before sending to alpha testers:
 - [ ] Tested installer on clean machine
 - [ ] Uploaded to file sharing service
 https://drive.google.com/file/d/1yjfM7qkbojztEQIlYnYNMl3xtgpNgMwv/view?usp=drive_link
+https://drive.google.com/file/d/1z3RDsJ9fIcdvEiIYsd9_MKMADs_AxAix/view?usp=drive_link
 ---
 
 ## 📄 License
