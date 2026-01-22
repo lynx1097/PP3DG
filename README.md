@@ -189,7 +189,7 @@ Before sending to alpha testers:
 - [ ] Build completed without errors
 - [ ] Tested installer on clean machine
 - [ ] Uploaded to file sharing service
-
+https://drive.google.com/file/d/1yjfM7qkbojztEQIlYnYNMl3xtgpNgMwv/view?usp=drive_link
 ---
 
 ## 📄 License
