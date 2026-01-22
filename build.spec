@@ -120,7 +120,11 @@ safe_excludes = [
 # STEP 4: Define ALL hidden imports explicitly
 # ============================================
 hidden_imports = [
-    'packaging', 'packaging.version', 'packaging.specifiers', 'packaging.requirements', 'pyparsing',
+    'setuptools',
+    'pkg_resources.extern',
+    'pkg_resources._vendor.pyparsing',
+    'pkg_resources._vendor.packaging',
+    'pkg_resources._vendor.packaging.requirements',
     # Application modules
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     

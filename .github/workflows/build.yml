@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/
+          pip install -r requirements.txt pypore3d --index-url https://test.pypi.org/simple/
 
       - name: Build Suite
         run: pyinstaller --clean --noconfirm build.spec
@@ -45,7 +45,6 @@ jobs:
         shell: cmd
         run: |
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-setup.iss
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss
         continue-on-error: true
 
 
