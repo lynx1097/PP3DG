@@ -99,7 +99,7 @@ safe_excludes = [
     'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkViewsContext2D',
     
     # VTK Parallel extras (keep vtkParallelCore, exclude the rest)
-    'vtkmodules.vtkIOParallel', 'vtkmodules.vtkFiltersParallel',
+    'vtkmodules.vtkIOParallel',
     
     # VTK Advanced IO
     'vtkmodules.vtkIOSQL', 'vtkmodules.vtkIOAMR',
@@ -163,6 +163,7 @@ hidden_imports = [
     'vtkmodules.vtkFiltersGeneral',
     'vtkmodules.vtkFiltersGeometry',
     'vtkmodules.vtkFiltersSources',
+    'vtkmodules.vtkFiltersParallel',
     
     # VTK Rendering
     'vtkmodules.vtkRenderingCore',
