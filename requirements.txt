@@ -22,7 +22,7 @@ numpy==1.26.4
 Pillow==10.2.0
 
 # AI Integration
-google-generativeai==0.3.2
+google-genai
 pydantic==2.5.3
 
 # Configuration & System

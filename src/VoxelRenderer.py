@@ -1,13 +1,13 @@
-import sys , os , re , traceback , datetime , vtk, json
+import sys , os , re , traceback , datetime , json 
 import numpy as np
 import pyvista as pv
-
+from vtkmodules import vtkImagingCore, vtkCommonCore
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
     QPushButton, QLabel, QFileDialog, QDialog, QFormLayout, 
     QComboBox, QSpinBox, QCheckBox, QSlider, QMessageBox, 
-    QGroupBox, QLineEdit, QFrame, QStyle, QSizePolicy, QGraphicsOpacityEffect
+    QGroupBox, QLineEdit, QFrame, QStyle, QSizePolicy, QGraphicsOpacityEffect , QInputDialog
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve, QSize, QEvent, QPoint, QUrl
 from PyQt6.QtGui import QPainter, QPixmap, QColor, QImage, QMovie, QDesktopServices
@@ -104,7 +104,7 @@ class ThresholdWorker(QThread):
             target = 150; dims = self.grid.dimensions; mx = max(dims)
             if mx > target:
                 s = int(np.ceil(mx/target))
-                voi = vtk.vtkExtractVOI(); voi.SetInputData(self.grid); voi.SetSampleRate(s,s,s)
+                voi = vtkImagingCore.vtkExtractVOI(); voi.SetInputData(self.grid); voi.SetSampleRate(s,s,s)
                 voi.SetVOI(0,dims[0]-1,0,dims[1]-1,0,dims[2]-1); voi.Update()
                 pg = pv.wrap(voi.GetOutput())
             else: pg = self.grid
@@ -118,7 +118,7 @@ class DynamicChunkWorker(QThread):
     def __init__(self, grid, val, bounds): super().__init__(); self.grid=grid; self.val=val; self.b=bounds
     def run(self):
         try:
-            ex = vtk.vtkExtractVOI(); ex.SetInputData(self.grid); ex.SetSampleRate(1,1,1)
+            ex = vtkImagingCore.vtkExtractVOI(); ex.SetInputData(self.grid); ex.SetSampleRate(1,1,1)
             ex.SetVOI(self.b[0],self.b[1],self.b[2],self.b[3],self.b[4],self.b[5]); ex.Update()
             m = pv.wrap(ex.GetOutput()).contour([self.val]); m.clear_data(); self.finished.emit(m)
         except: pass
@@ -290,7 +290,7 @@ class VoxelViewerWidget(QWidget):
         self.plotter = QtInteractor(self); self.plotter.set_background('white'); self.plotter.show_grid(color='navy')
         self.layout.addWidget(self.plotter)
         self.create_slice_sliders()
-        self.plotter.interactor.AddObserver(vtk.vtkCommand.EndInteractionEvent, self.on_camera_stop)
+        self.plotter.interactor.AddObserver(vtkCommonCore.vtkCommand.EndInteractionEvent, self.on_camera_stop)
         self.panel = None
         
         # NEW: Floating Share Button

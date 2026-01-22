@@ -66,9 +66,8 @@ import IDE as code
 import VoxelRenderer as vis
 from Client import GeminiWorker as gworker
 import DiagnosticModule as diag  
-import google.generativeai as ai
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QLabel, QTextBrowser, QSplashScreen, QMessageBox, QInputDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QLabel, QTextBrowser, QSplashScreen, QMessageBox
 from PyQt6.QtGui import QFont, QPixmap, QIcon, QMovie
 from PyQt6.QtCore import Qt, QTimer, QSize
 from pathlib import Path

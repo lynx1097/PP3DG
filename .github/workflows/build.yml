@@ -30,16 +30,48 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install Dependencies
+          cache: 'pip'  # Cache pip dependencies
+      
+      # ========================================
+      # OPTIMIZATION 1: Cache PyInstaller build
+      # ========================================
+      - name: Cache PyInstaller Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            __pycache__
+          key: ${{ runner.os }}-pyinstaller-${{ hashFiles('build.spec', 'requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pyinstaller-
+      
+      # ========================================
+      # OPTIMIZATION 2: Parallel pip install
+      # ========================================
+      - name: Install Dependencies (Optimized)
         run: |
-          pip install -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/
-
-      - name: Build Suite
-        run: pyinstaller --clean --noconfirm build.spec
-
-      - name: Install Inno Setup
-        run: choco install innosetup -y
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --no-warn-script-location -r requirements.txt pypore3d `
+            --index-url https://pypi.org/simple/ `
+            --extra-index-url https://test.pypi.org/simple/
+        shell: pwsh
+      
+      # ========================================
+      # OPTIMIZATION 3: Use PyInstaller cache
+      # ========================================
+      - name: Build Suite (with caching)
+        run: |
+          pyinstaller --clean --noconfirm `
+            --log-level WARN `
+            --workpath build `
+            --distpath dist `
+            build.spec
+        shell: pwsh
+        env:
+          PYINSTALLER_COMPILE_BOOTLOADER: 0  # Don't recompile bootloader
+      
+      - name: Install Inno Setup (Cached)
+        run: choco install innosetup -y --no-progress
 
       - name: Create Windows Installers
         shell: cmd

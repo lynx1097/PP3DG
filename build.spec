@@ -26,37 +26,11 @@ def safe_collect(package_name):
         print(f"[SKIP] {package_name}: {e}")
         return [], [], []
 
-
-# Collect VTK first (largest)
-d, b, h = safe_collect('vtkmodules')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
-
-# Collect PyVista
-d, b, h = safe_collect('pyvista')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
-
-# Collect pyvistaqt
-d, b, h = safe_collect('pyvistaqt')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
-
-# Collect pypore3d (may not exist)
-d, b, h = safe_collect('pypore3d')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
-
-# Collect pydantic
-d, b, h = safe_collect('pydantic')
-all_datas += d
-all_binaries += b
-all_hiddenimports += h
-
+for pkg in ['pyvista', 'pyvistaqt', 'pypore3d', 'pydantic']:
+    d, b, h = safe_collect(pkg)
+    all_datas += d
+    all_binaries += b
+    all_hiddenimports += h
 
 # ============================================
 # STEP 3: Collect PyQt6 (Platform Specific)
@@ -68,8 +42,8 @@ if sys.platform == 'win32':
         from PyInstaller.utils.hooks import get_package_paths
         _, qt_path = get_package_paths('PyQt6')
         
-        # Only collect essential Qt6 plugins
-        essential_plugins = ['platforms', 'styles', 'imageformats']
+        # CRITICAL: Only collect essential Qt plugins (not all)
+        essential_plugins = ['platforms', 'styles']
         qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
         
         if os.path.isdir(qt_plugins):
@@ -78,35 +52,13 @@ if sys.platform == 'win32':
                 if os.path.isdir(plugin_dir):
                     all_datas.append((plugin_dir, os.path.join('PyQt6', 'Qt6', 'plugins', plugin)))
         
-        # Only collect ESSENTIAL Qt6 DLLs (not ALL)
-        essential_dlls = [
-            'Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll',
-            'Qt6OpenGL.dll', 'Qt6OpenGLWidgets.dll', 'Qt6Svg.dll',
-            'Qt6Network.dll', 'Qt6PrintSupport.dll'
-        ]
-        
-        qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
-        if os.path.isdir(qt_bin):
-            for dll_name in essential_dlls:
-                dll_path = os.path.join(qt_bin, dll_name)
-                if os.path.exists(dll_path):
-                    all_binaries.append((dll_path, '.'))
-        
-        print(f"[OK] Added essential Qt6 plugins and DLLs")
+        # OPTIMIZATION: Don't manually add Qt6 DLLs - let PyInstaller auto-detect
+        # This is MUCH faster and prevents duplicate DLL searches
         
     except Exception as e:
-        print(f"[WARN] PyQt6 manual collection failed: {e}")
-else:
-    print("[INFO] Skipping manual PyQt6 collection for macOS/Linux to prevent symlink errors.")
-  
+        pass  
 
-# Binaries: Define Windows system DLLs only if on Windows
-my_binaries = []
-if sys.platform == 'win32':
-    my_binaries = [
-        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
-        ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
-    ]
+my_binaries = all_binaries
 
 # Excludes: Aggressive cleanup to save space safely
 safe_excludes = [
@@ -121,24 +73,30 @@ safe_excludes = [
     
     # Test frameworks
     'pytest', 'unittest', 'nose',
-    'numpy.tests', 'pyvista.tests',
+    '*.tests', '*.test',
     
     # Qt modules you DON'T use (CRITICAL for size reduction)
-    'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
-    'PyQt6.QtBluetooth', 'PyQt6.QtNfc', 'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
-    'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
-    'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
-    'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets', 'PyQt6.QtQml',
-    'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
     
-    # VTK modules you don't use
-    'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
-    'vtkmodules.vtkDomainsChemistry', 'vtkmodules.vtkGeovisCore',
+    'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
+    'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+    'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
+    'PyQt6.QtWebEngine*',
+    'PyQt6.QtBluetooth', 'PyQt6.QtNfc',
+    'PyQt6.QtMultimedia*', 'PyQt6.QtQuick*',
+    'PyQt6.QtQml', 'PyQt6.QtDesigner',
+    
+    # VTK extras
+    'vtkmodules.vtkWeb*',
+    'vtkmodules.vtkDomains*',
+    'vtkmodules.vtkGeovisCore',
     'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkInfovisCore',
     'vtkmodules.vtkIOParallel', 'vtkmodules.vtkParallelCore',
     
-    # Trame (web-based VTK - you don't use)
-    'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
+    # Trame
+    'trame*',
+
+    
+  
     
     # Standard library bloat
     'curses', 'pydoc', 'doctest',
@@ -172,9 +130,7 @@ hidden_imports = [
     'PIL.Image',
     
     # Google GenAI
-    'google.genai',
-    'google.generativeai',
-    
+    'google.genai',    
     # Pydantic
     'pydantic',
     'pydantic_core',
@@ -193,10 +149,18 @@ hidden_imports = [
     'pypore3d.p3dBlobPy',
     'pypore3d.p3dSkelPy',
     
-    # VTK essentials
-    'vtkmodules.all',
-    'vtkmodules.util.numpy_support',
-    'vtkmodules.qt.QVTKRenderWindowInteractor',
+    # --- 1. VTK ESSENTIALS (Replaces vtkmodules.all) ---
+    # Core & Data
+    'vtkmodules.vtkCommonCore',
+    'vtkmodules.vtkCommonDataModel',
+    'vtkmodules.vtkImagingCore',        # You specifically asked for this
+    'vtkmodules.util.numpy_support',    # Critical for NumPy <-> VTK
+    
+    # Rendering Backend (REQUIRED for GUI to display anything)
+    'vtkmodules.vtkRenderingOpenGL2',
+    'vtkmodules.vtkInteractionStyle',
+    'vtkmodules.vtkRenderingUI',
+    'vtkmodules.qt.QVTKRenderWindowInteractor', # The widget for PyQt6
 ]
 
 # Add collected hiddenimports
