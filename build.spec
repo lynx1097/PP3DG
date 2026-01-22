@@ -62,104 +62,130 @@ my_binaries = all_binaries
 
 # Excludes: Aggressive cleanup to save space safely
 safe_excludes = [
-    # GUI Frameworks you DON'T use
+    # GUI Frameworks
     'tkinter', '_tkinter', 'tcl', 'tk',
     'PySide2', 'PySide6', 'wx', 'Gtk', 'GTK3',
     
-    # Scientific packages you DON'T import
-    'scipy', 'pandas', 'matplotlib',
+    # Scientific packages
+    'scipy', 'pandas', 
+    'matplotlib', 'matplotlib.pyplot', 'matplotlib.backends',
     'notebook', 'jupyter', 'IPython',
     'sklearn', 'tensorflow', 'torch',
     
-    # Test frameworks
+    # Tests
     'pytest', 'unittest', 'nose',
-    '*.tests', '*.test',
+    'numpy.tests', 'pyvista.tests',
     
-    # Qt modules you DON'T use (CRITICAL for size reduction)
-    
-    'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
-    'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+    # Qt bloat
+    'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
+    'PyQt6.QtBluetooth', 'PyQt6.QtNfc', 'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
+    'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+    'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
+    'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets', 'PyQt6.QtQml',
     'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
-    'PyQt6.QtWebEngine*',
-    'PyQt6.QtBluetooth', 'PyQt6.QtNfc',
-    'PyQt6.QtMultimedia*', 'PyQt6.QtQuick*',
-    'PyQt6.QtQml', 'PyQt6.QtDesigner',
     
-    # VTK extras
-    'vtkmodules.vtkWeb*',
-    'vtkmodules.vtkDomains*',
+    # PyVistaQt extras
+    'pyvistaqt.dialog', 'pyvistaqt.counter', 'pyvistaqt.window',
+    
+    # VTK Web
+    'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
+    
+    # VTK Domains
+    'vtkmodules.vtkDomainsChemistry', 'vtkmodules.vtkDomainsChemistryOpenGL2',
     'vtkmodules.vtkGeovisCore',
-    'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkInfovisCore',
-    'vtkmodules.vtkIOParallel', 'vtkmodules.vtkParallelCore',
+    
+    # VTK InfoVis
+    'vtkmodules.vtkInfovisCore', 'vtkmodules.vtkInfovisLayout',
+    'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkViewsContext2D',
+    
+    # VTK Parallel extras (keep vtkParallelCore, exclude the rest)
+    'vtkmodules.vtkIOParallel', 'vtkmodules.vtkFiltersParallel',
+    
+    # VTK Advanced IO
+    'vtkmodules.vtkIOSQL', 'vtkmodules.vtkIOAMR',
+    'vtkmodules.vtkIOEnSight', 'vtkmodules.vtkIOExodus',
+    'vtkmodules.vtkIONetCDF', 'vtkmodules.vtkIOVideo', 'vtkmodules.vtkIOFFMPEG',
+    
+    # VTK Rendering extras
+    'vtkmodules.vtkRenderingAnnotation',
+    'vtkmodules.vtkRenderingContext2D', 'vtkmodules.vtkRenderingContextOpenGL2',
+    'vtkmodules.vtkRenderingLabel', 'vtkmodules.vtkRenderingLOD',
+    'vtkmodules.vtkRenderingMatplotlib',
     
     # Trame
-    'trame*',
-
-    # Standard library bloat
+    'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
+    
+    # Stdlib bloat
     'curses', 'pydoc', 'doctest',
     'xml.dom.domreg', 'html.parser',
 ]
-
 # ============================================
 # STEP 4: Define ALL hidden imports explicitly
 # ============================================
 hidden_imports = [
-    # Your application modules
+    # Your app
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     
-    # PyQt6 - ONLY modules you import
-    'PyQt6.QtCore',
-    'PyQt6.QtGui',
-    'PyQt6.QtWidgets',
-    'PyQt6.Qsci',
-    'PyQt6.sip',
-    'PyQt6.QtOpenGL',
-    'PyQt6.QtOpenGLWidgets',
-    'PyQt6.QtSvg',
-    'PyQt6.QtNetwork',
-    'PyQt6.QtPrintSupport',
+    # PyQt6
+    'PyQt6.QtCore', 'PyQt6.QtGui', 'PyQt6.QtWidgets',
+    'PyQt6.Qsci', 'PyQt6.sip',
+    'PyQt6.QtOpenGL', 'PyQt6.QtOpenGLWidgets',
+    'PyQt6.QtSvg', 'PyQt6.QtNetwork', 'PyQt6.QtPrintSupport',
     
-    # NumPy essentials
-    'numpy.core._methods',
-    'numpy.core._dtype_ctypes',
-    
-    
-
-    # PIL
+    # Core packages
+    'numpy.core._methods', 'numpy.core._dtype_ctypes',
     'PIL.Image',
-    
-    # Google GenAI
-    'google.genai',    
-    # Pydantic
-    'pydantic',
-    'pydantic_core',
-    
-    # System
-    'psutil',
-    'dotenv',
-    
-    # Telemetry (if you actually use it)
+    'google.genai', 'google.generativeai',
+    'pydantic', 'pydantic_core',
+    'psutil', 'dotenv',
     'newrelic_telemetry_sdk',
     
     # pypore3d
-    'pypore3d',
-    'pypore3d.p3dFiltPy',
-    'pypore3d.p3dFiltPy_16',
-    'pypore3d.p3dBlobPy',
-    'pypore3d.p3dSkelPy',
+    'pypore3d', 'pypore3d.p3dFiltPy', 'pypore3d.p3dFiltPy_16',
+    'pypore3d.p3dBlobPy', 'pypore3d.p3dSkelPy',
     
-    # --- 1. VTK ESSENTIALS (Replaces vtkmodules.all) ---
-    # Core & Data
+    # PyVistaQt
+    'pyvistaqt', 'pyvistaqt.plotting',
+    
+    # VTK Core
     'vtkmodules.vtkCommonCore',
     'vtkmodules.vtkCommonDataModel',
-    'vtkmodules.vtkImagingCore',        # You specifically asked for this
-    'vtkmodules.util.numpy_support',    # Critical for NumPy <-> VTK
+    'vtkmodules.vtkCommonExecutionModel',
+    'vtkmodules.vtkCommonMath',
+    'vtkmodules.vtkCommonTransforms',
+    'vtkmodules.vtkCommonSystem',
     
-    # Rendering Backend (REQUIRED for GUI to display anything)
+    # VTK Imaging
+    'vtkmodules.vtkImagingCore',
+    
+    # VTK Filters
+    'vtkmodules.vtkFiltersCore',
+    'vtkmodules.vtkFiltersGeneral',
+    'vtkmodules.vtkFiltersGeometry',
+    'vtkmodules.vtkFiltersSources',
+    
+    # VTK Rendering
+    'vtkmodules.vtkRenderingCore',
     'vtkmodules.vtkRenderingOpenGL2',
-    'vtkmodules.vtkInteractionStyle',
+    'vtkmodules.vtkRenderingVolume',
+    'vtkmodules.vtkRenderingVolumeOpenGL2',
     'vtkmodules.vtkRenderingUI',
-    'vtkmodules.qt.QVTKRenderWindowInteractor', # The widget for PyQt6
+    'vtkmodules.vtkRenderingFreeType',
+    
+    # VTK Interaction
+    'vtkmodules.vtkInteractionStyle',
+    'vtkmodules.vtkInteractionWidgets',
+    
+    # VTK IO
+    'vtkmodules.vtkIOCore',
+    'vtkmodules.vtkIOImage',
+    
+    # VTK Parallel (REQUIRED - don't exclude)
+    'vtkmodules.vtkParallelCore',
+    
+    # VTK Utils
+    'vtkmodules.util.numpy_support',
+    'vtkmodules.qt.QVTKRenderWindowInteractor',
 ]
 
 # Add collected hiddenimports
