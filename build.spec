@@ -7,123 +7,63 @@ from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_dat
 BASE_DIR = Path(SPECPATH)
 SRC_DIR = BASE_DIR / "src"
 
-# =========================================================
-# 1. CONFIGURATION & DEBLOATING
-# =========================================================
-block_cipher = None
+
+# 1. THE "GRAB EVERYTHING" FUNCTION
 
 all_datas = []
 all_binaries = []
 all_hiddenimports = []
 
 def safe_collect(package_name):
-    """Safely collect a package, return empty lists on failure."""
+    """Run collect_all on a package to get absolutely everything."""
     try:
         datas, binaries, hiddenimports = collect_all(package_name)
-        print(f"[OK] Collected {package_name}: {len(datas)} datas, {len(binaries)} binaries")
+        print(f"[OK] Full Collect: {package_name}")
         return datas, binaries, hiddenimports
     except Exception as e:
         print(f"[SKIP] {package_name}: {e}")
         return [], [], []
 
-for pkg in ['pyvista', 'pyvistaqt', 'pypore3d', 'pydantic', 'setuptools']:
+packages = [
+    'vtkmodules',   
+    'pyvista',        
+    'pyvistaqt',      
+    'pypore3d',       
+    'pydantic',
+    'setuptools'
+]
+
+for pkg in packages:
     d, b, h = safe_collect(pkg)
     all_datas += d
     all_binaries += b
     all_hiddenimports += h
-
-# ============================================
-# STEP 3: Collect PyQt6 (Platform Specific)
-# ============================================
-
-# 1. Windows: Manual collection (Required for stability)
-if sys.platform == 'win32':
-    try:
-        from PyInstaller.utils.hooks import get_package_paths
-        _, qt_path = get_package_paths('PyQt6')
+try:
+    from PyInstaller.utils.hooks import get_package_paths
+    _, qt_path = get_package_paths('PyQt6')
+    
+    # Collect Qt6 plugins directory
+    qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
+    if os.path.isdir(qt_plugins):
+        all_datas.append((qt_plugins, os.path.join('PyQt6', 'Qt6', 'plugins')))
+        print(f"[OK] Added Qt6 plugins from {qt_plugins}")
+    
+    # Collect ALL DLLs from Qt6/bin
+    qt_bin = os.path.join(qt_path, 'Qt6', 'bin')
+    if os.path.isdir(qt_bin):
+        for f in os.listdir(qt_bin):
+            if f.endswith('.dll'):
+                src = os.path.join(qt_bin, f)
+                all_binaries.append((src, '.'))
+        print(f"[OK] Added Qt6 DLLs from {qt_bin}")
         
-        # CRITICAL: Only collect essential Qt plugins (not all)
-        essential_plugins = ['platforms', 'styles']
-        qt_plugins = os.path.join(qt_path, 'Qt6', 'plugins')
-        
-        if os.path.isdir(qt_plugins):
-            for plugin in essential_plugins:
-                plugin_dir = os.path.join(qt_plugins, plugin)
-                if os.path.isdir(plugin_dir):
-                    all_datas.append((plugin_dir, os.path.join('PyQt6', 'Qt6', 'plugins', plugin)))
-        
-        # OPTIMIZATION: Don't manually add Qt6 DLLs - let PyInstaller auto-detect
-        # This is MUCH faster and prevents duplicate DLL searches
-        
-    except Exception as e:
-        pass  
+except Exception as e:
+    print(f"[WARN] PyQt6 manual collection failed: {e}")
 
-my_binaries = all_binaries
+# 5. HIDDEN IMPORTS (STRICT LIST)
 
-# Excludes: Aggressive cleanup to save space safely
-safe_excludes = [
-    # GUI Frameworks
-    'tkinter', '_tkinter', 'tcl', 'tk',
-    'PySide2', 'PySide6', 'wx', 'Gtk', 'GTK3',
-    
-    # Scientific packages
-    'scipy', 'pandas', 
-    'matplotlib', 'matplotlib.pyplot', 'matplotlib.backends',
-    'notebook', 'jupyter', 'IPython',
-    'sklearn', 'tensorflow', 'torch',
-    
-    # Tests
-    'pytest', 'unittest', 'nose',
-    'numpy.tests', 'pyvista.tests',
-    
-    # Qt bloat
-    'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
-    'PyQt6.QtBluetooth', 'PyQt6.QtNfc', 'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
-    'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
-    'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
-    'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets', 'PyQt6.QtQml',
-    'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
-    
-    # PyVistaQt extras
-    'pyvistaqt.dialog', 'pyvistaqt.counter', 'pyvistaqt.window',
-    
-    # VTK Web
-    'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
-    
-    # VTK Domains
-    'vtkmodules.vtkDomainsChemistry', 'vtkmodules.vtkDomainsChemistryOpenGL2',
-    'vtkmodules.vtkGeovisCore',
-    
-    # VTK InfoVis
-    'vtkmodules.vtkInfovisCore', 'vtkmodules.vtkInfovisLayout',
-    'vtkmodules.vtkViewsInfovis', 'vtkmodules.vtkViewsContext2D',
-    
-    # VTK Parallel extras (keep vtkParallelCore, exclude the rest)
-    'vtkmodules.vtkIOParallel',
-    
-    # VTK Advanced IO
-    'vtkmodules.vtkIOSQL', 'vtkmodules.vtkIOAMR',
-    'vtkmodules.vtkIOEnSight', 'vtkmodules.vtkIOExodus',
-    'vtkmodules.vtkIONetCDF', 'vtkmodules.vtkIOVideo', 'vtkmodules.vtkIOFFMPEG',
-    
-    # VTK Rendering extras
-    'vtkmodules.vtkRenderingAnnotation',
-    'vtkmodules.vtkRenderingContext2D', 'vtkmodules.vtkRenderingContextOpenGL2',
-    'vtkmodules.vtkRenderingLabel', 'vtkmodules.vtkRenderingLOD',
-    'vtkmodules.vtkRenderingMatplotlib',
-    
-    # Trame
-    'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
-    
-    # Stdlib bloat
-    'curses', 'pydoc', 'doctest',
-    'xml.dom.domreg', 'html.parser',
-]
-# ============================================
-# STEP 4: Define ALL hidden imports explicitly
-# ============================================
-hidden_imports = [
-    # Your app
+strict_imports = [
+    # Application
     'GUI', 'IDE', 'VoxelRenderer', 'Client', 'DiagnosticModule',
     
     # PyQt6
@@ -134,67 +74,36 @@ hidden_imports = [
     
     # Core packages
     'numpy.core._methods', 'numpy.core._dtype_ctypes',
-    'PIL.Image',
-    'google.genai', 'google.generativeai',
+    'PIL', 'PIL.Image',
+    'google.genai',
     'pydantic', 'pydantic_core',
-    'psutil', 'dotenv',
+    'psutil', 'dotenv', 'tempfile', 'json', 'pathlib'
     'newrelic_telemetry_sdk',
     
     # pypore3d
     'pypore3d', 'pypore3d.p3dFiltPy', 'pypore3d.p3dFiltPy_16',
     'pypore3d.p3dBlobPy', 'pypore3d.p3dSkelPy',
-    
-    # PyVistaQt
-    'pyvistaqt', 'pyvistaqt.plotting',
-    
-    # VTK Core
-    'vtkmodules.vtkCommonCore',
-    'vtkmodules.vtkCommonDataModel',
-    'vtkmodules.vtkCommonExecutionModel',
-    'vtkmodules.vtkCommonMath',
-    'vtkmodules.vtkCommonTransforms',
-    'vtkmodules.vtkCommonSystem',
-    
-    # VTK Imaging
-    'vtkmodules.vtkImagingCore',
-    
-    # VTK Filters
-    'vtkmodules.vtkFiltersCore',
-    'vtkmodules.vtkFiltersGeneral',
-    'vtkmodules.vtkFiltersGeometry',
-    'vtkmodules.vtkFiltersSources',
-    'vtkmodules.vtkFiltersParallel',
-    
-    # VTK Rendering
-    'vtkmodules.vtkRenderingCore',
-    'vtkmodules.vtkRenderingOpenGL2',
-    'vtkmodules.vtkRenderingVolume',
-    'vtkmodules.vtkRenderingVolumeOpenGL2',
-    'vtkmodules.vtkRenderingUI',
-    'vtkmodules.vtkRenderingFreeType',
-    
-    # VTK Interaction
-    'vtkmodules.vtkInteractionStyle',
-    'vtkmodules.vtkInteractionWidgets',
-    
-    # VTK IO
-    'vtkmodules.vtkIOCore',
-    'vtkmodules.vtkIOImage',
-    
-    # VTK Parallel (REQUIRED - don't exclude)
-    'vtkmodules.vtkParallelCore',
-    
-    # VTK Utils
+
+
+    'vtkmodules',
+    'vtkmodules.all',
     'vtkmodules.util.numpy_support',
     'vtkmodules.qt.QVTKRenderWindowInteractor',
+
+    'pkg_resources._vendor.packaging',
+    'pkg_resources._vendor.jaraco.text',
+    'pkg_resources._vendor.jaraco.classes',
+    'pkg_resources._vendor.jaraco.functools',
+    'pkg_resources._vendor.jaraco.context',
+
+
 ]
 
-# Add collected hiddenimports
-hidden_imports = list(set(hidden_imports + all_hiddenimports))
+strict_imports = list(set(strict_imports + all_hiddenimports))
 
-# ============================================
-# STEP 5: Data files
-# ============================================
+
+# 4. DATA FILES & METADATA
+
 datas = [
     (str(SRC_DIR / '.env'), '.'),
     (str(SRC_DIR / 'context.txt'), '.'),
@@ -203,114 +112,93 @@ datas = [
     (str(SRC_DIR / 'resources'), 'resources'),
 ] + all_datas
 
-# =========================================================
-# 2. ANALYSIS (Process both scripts)
-# =========================================================
+
+my_binaries = all_binaries
+
+# Define the build settings ONCE
+build_args = dict(
+    pathex=[str(SRC_DIR)],
+    binaries=[# Use the system compatibility DLLs if SDK is missing
+        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
+        ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
+    ]+ all_binaries,
+    datas=datas,
+    hiddenimports=strict_imports,
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[    
+            # GUI Frameworks
+            'tkinter', '_tkinter', 'tcl', 'tk',
+            'PySide2', 'PySide6', 'wx', 'Gtk', 'GTK3',
+            
+            # Scientific / Bloat 
+            'scipy', 'pandas', 'notebook', 'jupyter', 'IPython',
+            'sklearn', 'tensorflow', 'torch',
+            
+            # Testing
+            'pytest', 'unittest', 'nose', 'numpy.tests', 
+            
+            # Qt Extras
+            'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
+            'PyQt6.QtBluetooth', 'PyQt6.QtNfc', 'PyQt6.QtSensors', 'PyQt6.QtSerialPort',
+            'PyQt6.QtDesigner', 'PyQt6.QtHelp', 'PyQt6.QtTest', 'PyQt6.QtPositioning',
+            'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
+            'PyQt6.QtQuick', 'PyQt6.QtQuickWidgets', 'PyQt6.QtQml',
+            'PyQt6.QtSql', 'PyQt6.QtDBus', 'PyQt6.uic',
+                
+            # Trame
+            'trame', 'trame_vtk', 'trame_vuetify', 'trame_client', 'trame_server',
+            'vtkmodules.web', 'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
+            
+            'curses', 'pydoc', 'doctest',
+
+            'vtkmodules.web', 'vtkmodules.vtkWebCore', 'vtkmodules.vtkWebGLExporter',
+            'vtkmodules.vtkIOSQL', 'vtkmodules.vtkIOAMR',
+            'vtkmodules.vtkIOEnSight', 'vtkmodules.vtkIOExodus',
+            'vtkmodules.vtkIONetCDF', 'vtkmodules.vtkIOVideo', 'vtkmodules.vtkIOFFMPEG',
+            'vtkmodules.vtkRenderingMatplotlib','vtkmodules.vtkDomainsChemistry', 
+            'vtkmodules.vtkDomainsChemistryOpenGL2', 'vtkmodules.vtkGeovisCore',
+        ], 
+    noarchive=False,
+    optimize=0,
+)
 
 # --- Analysis 1: Main GUI ---
-a1 = Analysis(
-    ['src/GUI.py'],  # Main Entry Point
-    pathex=[str(SRC_DIR)],
-    binaries=my_binaries,
-    datas=datas,
-    hiddenimports=hidden_imports,
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=safe_excludes,
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
+a1 = Analysis(['src/GUI.py'], **build_args)
 
 # --- Analysis 2: User Testing ---
-a2 = Analysis(
-    ['src/User-Testing.py'],  # Second Entry Point
-    pathex=[str(SRC_DIR)],
-    binaries=my_binaries,
-    datas=datas,
-    hiddenimports=hidden_imports,
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=safe_excludes,
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
-# ============================================
-# STEP 7: Remove duplicate binaries
-# ============================================
-seen_binaries1 = set()
-seen_binaries2 = set()
-unique_binaries1 = []
-unique_binaries2 = []
-for item in a1.binaries:
-    name = item[0]
-    if name not in seen_binaries1:
-        seen_binaries1.add(name)
-        unique_binaries1.append(item)
-a1.binaries = unique_binaries1
+a2 = Analysis(['src/User-Testing.py'], **build_args)
 
-for item in a2.binaries:
-    name = item[0]
-    if name not in seen_binaries2:
-        seen_binaries2.add(name)
-        unique_binaries2.append(item)
-a2.binaries = unique_binaries2
+# --- Deduplicate Binaries (Crucial to prevent crashes) ---
+def dedup(bin_list):
+    seen = set(); unique = []
+    for item in bin_list:
+        if item[0] not in seen:
+            seen.add(item[0]); unique.append(item)
+    return unique
 
-# =========================================================
-# 3. MERGE & BUILD (Deduplication happens here)
-# =========================================================
+a1.binaries = dedup(a1.binaries)
+a2.binaries = dedup(a2.binaries)
 
-# Create PYZ archives (Python bytecode)
-pyz1 = PYZ(a1.pure, a1.zipped_data, cipher=block_cipher)
-pyz2 = PYZ(a2.pure, a2.zipped_data, cipher=block_cipher)
-# Check if icon exists
+# --- PYZ ---
+pyz1 = PYZ(a1.pure, a1.zipped_data)
+pyz2 = PYZ(a2.pure, a2.zipped_data)
+
+# --- EXEs ---
 icon_path = SRC_DIR / 'resources' / 'images' / 'Icon.ico'
 exe_icon = str(icon_path) if icon_path.exists() else None
 
-# Create EXE 1 (CubeLab)
-exe1 = EXE(
-    pyz1,
-    a1.scripts,
-    [],
-    exclude_binaries=True,
-    name='CubeLab',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=True,  # Strip symbols to save space
-    upx=False,
-    console=False, # Set to True if you want a terminal window for debugging
-    icon=exe_icon,
-)
+exe1 = EXE(pyz1, a1.scripts, [], exclude_binaries=True, name='CubeLab', 
+          debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False, icon=exe_icon, disable_windowed_traceback=False, argv_emulation=False, target_arch=None, codesign_identity=None, entitlements_file=None)
 
-# Create EXE 2 (UserTesting)
-exe2 = EXE(
-    pyz2,
-    a2.scripts,
-    [],
-    exclude_binaries=True,
-    name='CubeLab-UserTesting',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=True,
-    upx=False,
-    console=False,
-    icon=exe_icon,
-)
+exe2 = EXE(pyz2, a2.scripts, [], exclude_binaries=True, name='CubeLab-UserTesting', 
+          debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False, icon=exe_icon, disable_windowed_traceback=False, argv_emulation=False, target_arch=None, codesign_identity=None, entitlements_file=None)
 
-# COLLECT: Bundles both EXEs into ONE folder with shared libraries
-
+# --- COLLECT ---
 coll = COLLECT(
-    exe1,
-    a1.binaries, a1.datas,
-    exe2,
-    a2.binaries, a2.datas,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
+    exe1, a1.binaries, a1.datas,
+    exe2, a2.binaries, a2.datas,
+    strip=False, upx=False, upx_exclude=[],
     name='CubeLab',
 )

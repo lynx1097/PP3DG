@@ -15,7 +15,8 @@ PyQt6-QScintilla==2.14.1
 # 3D Visualization
 pyvista==0.42.3
 pyvistaqt==0.11.0
-vtk
+vtk==9.3.1
+matplotlib==3.7.0
 
 # Data Processing
 numpy==1.26.4

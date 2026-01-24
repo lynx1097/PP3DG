@@ -1,0 +1,1185 @@
+{
+  "visual_context": {
+    "metadata": {
+      "title": "Cube Lab Visual Context Reference",
+      "description": "Hierarchical UI element reference following workflow paths for AI-guided user navigation",
+      "application": "Cube Lab - Pypore3D Mirror Studio",
+      "version": "1.0",
+      "purpose": "Provide AI assistants with structured context about UI elements and their relationships to guide users through specific workflows"
+    },
+    "application_structure": {
+      "id": "main_window",
+      "type": "QMainWindow",
+      "title": "Cube Lab",
+      "description": "Main application window containing all panels and controls",
+      "layout": "vertical",
+      "children": {
+        "top_area": {
+          "id": "top_panels",
+          "layout": "horizontal_split",
+          "ratio": "1:1",
+          "children": {
+            "ide_panel": {
+              "id": "smart_ide_widget",
+              "type": "SmartIDEWidget",
+              "description": "Code editor and visual programming interface",
+              "location": "left_half"
+            },
+            "viewer_panel": {
+              "id": "voxel_viewer_widget", 
+              "type": "VoxelViewerWidget",
+              "description": "3D volumetric data visualization",
+              "location": "right_half"
+            }
+          }
+        },
+        "bottom_area": {
+          "id": "chat_panel",
+          "type": "ChatPanel",
+          "description": "AI assistant interface",
+          "location": "bottom_30_percent"
+        }
+      }
+    },
+    "workflows": {
+      "workflow_create_processing_pipeline": {
+        "id": "WF001",
+        "name": "Create Image Processing Pipeline",
+        "description": "Build a visual workflow by adding subroutines and functions to process image data",
+        "entry_point": "ide_panel",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Navigate to Subroutines Tab",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "location": "left_panel",
+                "children": {
+                  "tab_widget": {
+                    "id": "tabs",
+                    "type": "QTabWidget",
+                    "children": {
+                      "subroutines_tab": {
+                        "id": "subroutines_tab",
+                        "type": "tab",
+                        "label": "Subroutines",
+                        "index": 0,
+                        "is_target": true,
+                        "instruction": "Click the 'Subroutines' tab on the left panel to access the visual workflow builder"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 2,
+            "action": "Add New Subroutine",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "visual_tab": {
+                    "id": "visual_tab",
+                    "children": {
+                      "add_subroutine_button": {
+                        "id": "btn_add_sub",
+                        "type": "QPushButton",
+                        "label": "+ Add New Subroutine",
+                        "style": "blue_accent_button",
+                        "location": "top_of_subroutines_area",
+                        "is_target": true,
+                        "instruction": "Click the blue '+ Add New Subroutine' button at the top of the Subroutines panel"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 3,
+            "action": "Add Function to Subroutine",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "subroutine_widget": {
+                    "id": "subroutine_N",
+                    "type": "SubroutineWidget",
+                    "description": "Container for a sequence of functions",
+                    "children": {
+                      "header": {
+                        "id": "subroutine_header",
+                        "children": {
+                          "name_label": {
+                            "id": "name_label",
+                            "type": "QLabel",
+                            "content": "Subroutine N",
+                            "style": "blue_accent_text"
+                          },
+                          "description_field": {
+                            "id": "note_field",
+                            "type": "QLineEdit",
+                            "placeholder": "Add description...",
+                            "style": "italic_dim_text"
+                          },
+                          "add_function_button": {
+                            "id": "btn_add",
+                            "type": "QPushButton",
+                            "label": "+ Func",
+                            "is_target": true,
+                            "instruction": "Click the '+ Func' button in the subroutine header to open the function selection dialog"
+                          },
+                          "run_button": {
+                            "id": "btn_run",
+                            "type": "QToolButton",
+                            "icon": "SP_MediaPlay",
+                            "tooltip": "Run this entire subroutine (isolated)"
+                          },
+                          "delete_button": {
+                            "id": "btn_del",
+                            "type": "QToolButton",
+                            "icon": "SP_TitleBarCloseButton",
+                            "tooltip": "Delete this subroutine"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 4,
+            "action": "Select Function from Dialog",
+            "ui_path": {
+              "dialog": {
+                "id": "function_selection_dialog",
+                "type": "QDialog",
+                "title": "Select Function",
+                "modal": true,
+                "children": {
+                  "left_column": {
+                    "id": "category_column",
+                    "children": {
+                      "sort_dropdown": {
+                        "id": "cb_sort",
+                        "type": "QComboBox",
+                        "options": ["Sort By :", "Module", "Category"],
+                        "instruction": "Use the dropdown to sort functions by Module or Category"
+                      },
+                      "category_list": {
+                        "id": "cat_list",
+                        "type": "QListWidget",
+                        "content_type": "modules_or_categories",
+                        "instruction": "Click a module or category to filter the functions list"
+                      }
+                    }
+                  },
+                  "middle_column": {
+                    "id": "functions_column",
+                    "children": {
+                      "functions_label": {
+                        "id": "functions_label",
+                        "type": "QLabel",
+                        "text": "Functions:"
+                      },
+                      "functions_list": {
+                        "id": "fn_list",
+                        "type": "QListWidget",
+                        "content_type": "function_names",
+                        "instruction": "Click a function name to see its description"
+                      }
+                    }
+                  },
+                  "right_column": {
+                    "id": "description_column",
+                    "children": {
+                      "description_label": {
+                        "id": "desc_label",
+                        "type": "QLabel",
+                        "content": "Function description text"
+                      }
+                    }
+                  },
+                  "button_bar": {
+                    "id": "dialog_buttons",
+                    "children": {
+                      "add_function_button": {
+                        "id": "btn_ok",
+                        "type": "QPushButton",
+                        "label": "Add Function",
+                        "style": "blue_accent",
+                        "is_target": true,
+                        "instruction": "After selecting a function, click 'Add Function' to add it to your subroutine"
+                      },
+                      "cancel_button": {
+                        "id": "btn_cancel",
+                        "type": "QPushButton",
+                        "label": "Cancel",
+                        "style": "red_danger"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 5,
+            "action": "Configure Function Parameters",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "subroutine_widget": {
+                    "id": "subroutine_N",
+                    "children": {
+                      "function_card": {
+                        "id": "function_card",
+                        "type": "FunctionCard",
+                        "description": "Visual representation of a pypore3d function with configurable parameters",
+                        "children": {
+                          "header": {
+                            "id": "card_header",
+                            "children": {
+                              "title": {
+                                "id": "title",
+                                "type": "QLabel",
+                                "content": "Function Display Name"
+                              },
+                              "paste_metadata_button": {
+                                "id": "btn_paste_meta",
+                                "type": "QToolButton",
+                                "icon": "SP_FileDialogDetailedView",
+                                "tooltip": "Paste Parameters from Voxel Viewer",
+                                "instruction": "Click to automatically fill parameters from currently loaded file in Voxel Viewer"
+                              },
+                              "run_single_button": {
+                                "id": "btn_run",
+                                "type": "QToolButton",
+                                "icon": "SP_MediaPlay",
+                                "tooltip": "Run this function only (isolated)"
+                              },
+                              "delete_button": {
+                                "id": "btn_del",
+                                "type": "QToolButton",
+                                "icon": "SP_TitleBarCloseButton",
+                                "tooltip": "Delete Function"
+                              }
+                            }
+                          },
+                          "parameters_grid": {
+                            "id": "params_layout",
+                            "type": "QGridLayout",
+                            "description": "Grid of parameter inputs",
+                            "parameter_types": {
+                              "file_selector": {
+                                "type": "FileSelector",
+                                "components": ["line_edit", "browse_button"],
+                                "for_types": ["bytearray", "ushort_array", "uint_array", "path_strings"],
+                                "instruction": "Click the folder icon to browse for a file, or type the path directly"
+                              },
+                              "integer_input": {
+                                "type": "QSpinBox",
+                                "for_types": ["int"],
+                                "instruction": "Enter an integer value or use the spinner arrows"
+                              },
+                              "float_input": {
+                                "type": "QDoubleSpinBox",
+                                "for_types": ["float"],
+                                "instruction": "Enter a decimal value or use the spinner arrows"
+                              },
+                              "boolean_input": {
+                                "type": "QCheckBox",
+                                "for_types": ["bool"],
+                                "instruction": "Check or uncheck the box"
+                              },
+                              "text_input": {
+                                "type": "DropInput",
+                                "for_types": ["string", "other"],
+                                "accepts_drops": true,
+                                "instruction": "Type a value or drag a variable from another function's output"
+                              }
+                            },
+                            "is_target": true
+                          },
+                          "output_basket": {
+                            "id": "output_basket",
+                            "type": "QHBoxLayout",
+                            "children": {
+                              "output_pill": {
+                                "id": "basket_item",
+                                "type": "DraggableOutput",
+                                "description": "Draggable output variable that can be dropped into other function inputs",
+                                "styles": {
+                                  "array_output": "blue pill with file icon",
+                                  "scalar_output": "purple pill with x= prefix"
+                                },
+                                "instruction": "Drag this output pill to another function's input field to chain functions together"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "workflow_view_edit_code": {
+        "id": "WF002",
+        "name": "View and Edit Generated Code",
+        "description": "Switch to IDE tab to view, edit, or debug the generated Python code",
+        "entry_point": "ide_panel",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Switch to IDE Tab",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "tab_widget": {
+                    "id": "tabs",
+                    "children": {
+                      "ide_tab": {
+                        "id": "ide_tab",
+                        "type": "tab",
+                        "label": "IDE",
+                        "index": 1,
+                        "is_target": true,
+                        "instruction": "Click the 'IDE' tab to view the generated Python code"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 2,
+            "action": "Edit Code in Editor",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "editor_container": {
+                    "id": "editor_container",
+                    "children": {
+                      "code_editor": {
+                        "id": "editor",
+                        "type": "AdvancedEditor (QsciScintilla)",
+                        "features": [
+                          "Syntax highlighting",
+                          "Auto-completion",
+                          "Line numbers",
+                          "Code folding",
+                          "Brace matching",
+                          "Real-time syntax checking"
+                        ],
+                        "is_target": true,
+                        "instruction": "Edit the Python code directly in the editor. Changes sync back to the visual subroutines"
+                      },
+                      "status_bar": {
+                        "id": "status_bar",
+                        "type": "QFrame",
+                        "children": {
+                          "line_col_indicator": {
+                            "id": "lbl_stats",
+                            "type": "QLabel",
+                            "content": "Ln N, Col M | Python"
+                          },
+                          "error_indicator": {
+                            "id": "lbl_err",
+                            "type": "QLabel",
+                            "content": "✓ No Errors OR ⚠ N Error(s)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 3,
+            "action": "Request AI Code Fix",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "editor_container": {
+                    "children": {
+                      "ai_fix_button": {
+                        "id": "btn_code_ai",
+                        "type": "OverlayButton",
+                        "color": "green (#388e3c)",
+                        "tooltip": "Fix Syntax (AI)",
+                        "location": "bottom_right_corner",
+                        "is_target": true,
+                        "instruction": "Click the green circular button in the bottom-right corner of the code editor to get AI assistance"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "next_interaction": {
+              "dialog": {
+                "id": "ai_query_dialog",
+                "type": "AIQueryDialog",
+                "title": "AI Assistance Request",
+                "children": {
+                  "instruction_label": {
+                    "id": "instruction_label",
+                    "type": "QLabel",
+                    "text": "Describe your request (or leave empty to check errors):"
+                  },
+                  "text_input": {
+                    "id": "text_input",
+                    "type": "QTextEdit",
+                    "placeholder": "E.g., 'Optimize this function' or 'Why is this failing?'..."
+                  },
+                  "ask_ai_button": {
+                    "id": "btn_ok",
+                    "type": "QPushButton",
+                    "label": "Ask AI",
+                    "style": "blue_accent",
+                    "is_target": true,
+                    "instruction": "Describe what you need help with, then click 'Ask AI'"
+                  },
+                  "cancel_button": {
+                    "id": "btn_cancel",
+                    "type": "QPushButton",
+                    "label": "Cancel"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 4,
+            "action": "Undo/Redo AI Changes",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "editor_container": {
+                    "children": {
+                      "ai_undo_hud": {
+                        "id": "ai_undo_hud",
+                        "type": "AIUndoRedoHUD",
+                        "location": "top_center_floating",
+                        "visible_after": "ai_fix_applied",
+                        "children": {
+                          "undo_redo_button": {
+                            "id": "btn",
+                            "type": "QPushButton",
+                            "states": {
+                              "undo": "↩ Undo AI Fix",
+                              "redo": "↪ Redo AI Fix"
+                            },
+                            "is_target": true,
+                            "instruction": "Click to toggle between your original code and the AI-modified version"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "workflow_load_visualize_data": {
+        "id": "WF003",
+        "name": "Load and Visualize 3D Data",
+        "description": "Import RAW volumetric data and explore it in the 3D viewer",
+        "entry_point": "viewer_panel",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Open Import Dialog",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "location": "right_panel",
+                "children": {
+                  "floating_control_panel": {
+                    "id": "panel",
+                    "type": "FloatingControlPanel",
+                    "location": "left_edge_of_viewer",
+                    "children": {
+                      "file_group": {
+                        "id": "gb_file",
+                        "type": "QGroupBox",
+                        "title": "File",
+                        "children": {
+                          "open_button": {
+                            "id": "btn_open",
+                            "type": "QPushButton",
+                            "label": "Open sample",
+                            "icon": "SP_FileIcon",
+                            "is_target": true,
+                            "instruction": "Click 'Open sample' in the File section of the control panel to import data"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "next_interaction": {
+              "dialog": {
+                "id": "unified_load_dialog",
+                "type": "UnifiedLoadDialog",
+                "title": "Import Data",
+                "modal": true,
+                "children": {
+                  "file_row": {
+                    "id": "file_row",
+                    "children": {
+                      "file_path_field": {
+                        "id": "txt",
+                        "type": "QLineEdit",
+                        "readonly": true,
+                        "shows": "selected file path"
+                      },
+                      "browse_button": {
+                        "id": "btn_browse",
+                        "type": "QPushButton",
+                        "label": "Browse...",
+                        "is_target": true,
+                        "instruction": "Click 'Browse...' to select a .raw file"
+                      }
+                    }
+                  },
+                  "dimensions_row": {
+                    "id": "dims_row",
+                    "children": {
+                      "dim_x": {
+                        "id": "sx",
+                        "type": "QSpinBox",
+                        "label": "X:",
+                        "auto_parsed": true,
+                        "instruction": "Enter the X dimension (width) of your data"
+                      },
+                      "dim_y": {
+                        "id": "sy",
+                        "type": "QSpinBox",
+                        "label": "Y:",
+                        "auto_parsed": true,
+                        "instruction": "Enter the Y dimension (height) of your data"
+                      },
+                      "dim_z": {
+                        "id": "sz",
+                        "type": "QSpinBox",
+                        "label": "Z:",
+                        "auto_parsed": true,
+                        "instruction": "Enter the Z dimension (depth/slices) of your data"
+                      }
+                    }
+                  },
+                  "type_row": {
+                    "id": "type_row",
+                    "children": {
+                      "dtype_dropdown": {
+                        "id": "cb",
+                        "type": "QComboBox",
+                        "options": ["-", "Uint8", "Int8", "Uint16", "Int16", "Int32", "Uint32", "Float32"],
+                        "instruction": "Select the data type matching your RAW file format"
+                      }
+                    }
+                  },
+                  "status_label": {
+                    "id": "st",
+                    "type": "QLabel",
+                    "states": {
+                      "ok": {"text": "OK", "color": "green"},
+                      "mismatch": {"text": "Size Mismatch", "color": "red"}
+                    }
+                  },
+                  "load_button": {
+                    "id": "b_ok",
+                    "type": "QPushButton",
+                    "label": "Load",
+                    "enabled_when": "status_ok",
+                    "is_target": true,
+                    "instruction": "When status shows 'OK', click 'Load' to import the data"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 2,
+            "action": "Select Rendering Mode",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "children": {
+                  "floating_control_panel": {
+                    "children": {
+                      "rendering_mode_group": {
+                        "id": "gb_mode",
+                        "type": "QGroupBox",
+                        "title": "Rendering Mode",
+                        "children": {
+                          "mode_dropdown": {
+                            "id": "combo_mode",
+                            "type": "QComboBox",
+                            "options": [
+                              {"value": "Vol-XRay", "index": 0, "description": "X-Ray style volume rendering"},
+                              {"value": "Vol-CT", "index": 1, "description": "CT scan style with sigmoid opacity"},
+                              {"value": "Faces-Low", "index": 2, "description": "Surface mesh - low detail threshold"},
+                              {"value": "Faces-High", "index": 3, "description": "Surface mesh - high detail (WARNING: high RAM)"}
+                            ],
+                            "is_target": true,
+                            "instruction": "Select a rendering mode from the dropdown. Vol-XRay is default; use Faces modes for surface visualization"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 3,
+            "action": "Adjust Visualization Controls",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "children": {
+                  "floating_control_panel": {
+                    "children": {
+                      "controls_group": {
+                        "id": "gb_ctrl",
+                        "type": "QGroupBox",
+                        "title": "Controls",
+                        "children": {
+                          "opacity_slider": {
+                            "id": "slider_opacity",
+                            "type": "QSlider",
+                            "orientation": "horizontal",
+                            "range": [0, 100],
+                            "default": 30,
+                            "label": "Opacity / Density:",
+                            "is_target": true,
+                            "instruction": "Drag the slider to adjust opacity/density of the visualization"
+                          },
+                          "threshold_slider": {
+                            "id": "slider_threshold",
+                            "type": "QSlider",
+                            "orientation": "horizontal",
+                            "range": [0, 100],
+                            "default": 50,
+                            "label": "Threshold:",
+                            "visible_when": "faces_mode",
+                            "instruction": "Adjust the iso-value threshold for surface extraction"
+                          },
+                          "threshold_value_label": {
+                            "id": "lbl_thresh_val",
+                            "type": "QLabel",
+                            "content": "Range: min-max OR Thresh: value",
+                            "visible_when": "faces_mode"
+                          },
+                          "show_edges_checkbox": {
+                            "id": "chk_edges",
+                            "type": "QCheckBox",
+                            "label": "Show Edges",
+                            "visible_when": "faces_mode",
+                            "instruction": "Check to show wireframe edges on the mesh surface"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 4,
+            "action": "Use Slicing Mode",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "children": {
+                  "floating_control_panel": {
+                    "children": {
+                      "tools_group": {
+                        "id": "gb_tools",
+                        "type": "QGroupBox",
+                        "title": "Tools",
+                        "children": {
+                          "slicing_button": {
+                            "id": "btn_slice",
+                            "type": "QPushButton",
+                            "checkable": true,
+                            "states": {
+                              "off": {"label": "Slicing Mode: OFF", "style": "default"},
+                              "on": {"label": "Slicing Mode: ON", "style": "blue_active"}
+                            },
+                            "is_target": true,
+                            "instruction": "Click to toggle slicing mode. When ON, use the sliders on the 3D view to navigate through slices"
+                          },
+                          "save_slice_button": {
+                            "id": "btn_save_slice",
+                            "type": "QPushButton",
+                            "label": "Save Slice",
+                            "icon": "SP_DialogSaveButton",
+                            "visible_when": "slicing_on",
+                            "instruction": "Click to export the current slice as an image file"
+                          },
+                          "reset_camera_button": {
+                            "id": "btn_reset",
+                            "type": "QPushButton",
+                            "label": "Reset Cam",
+                            "icon": "SP_BrowserReload",
+                            "instruction": "Click to reset the camera to default view"
+                          },
+                          "snapshot_button": {
+                            "id": "btn_snap",
+                            "type": "QPushButton",
+                            "label": "Snapshot",
+                            "icon": "SP_DesktopIcon",
+                            "instruction": "Click to capture a screenshot of the current 3D view"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "slice_sliders": {
+                    "id": "slice_sliders",
+                    "visible_when": "slicing_on",
+                    "children": {
+                      "x_slider": {
+                        "id": "sl_x",
+                        "type": "QSlider",
+                        "orientation": "horizontal",
+                        "location": "top_of_3d_view",
+                        "label": "X:",
+                        "instruction": "Drag to move through X slices"
+                      },
+                      "y_slider": {
+                        "id": "sl_y",
+                        "type": "QSlider",
+                        "orientation": "vertical",
+                        "location": "right_of_3d_view",
+                        "label": "Y:",
+                        "instruction": "Drag to move through Y slices"
+                      },
+                      "z_slider": {
+                        "id": "sl_z",
+                        "type": "QSlider",
+                        "orientation": "horizontal",
+                        "location": "bottom_of_3d_view",
+                        "label": "Z:",
+                        "instruction": "Drag to move through Z slices"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 5,
+            "action": "Share Metadata to IDE",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "children": {
+                  "share_button": {
+                    "id": "btn_share",
+                    "type": "FloatingButton",
+                    "location": "bottom_right_of_3d_view",
+                    "color": "blue (#007acc)",
+                    "icon": "SP_FileDialogDetailedView",
+                    "tooltip": "Pass File Metadata to Subroutine",
+                    "is_target": true,
+                    "instruction": "Click to send the current file's metadata (dimensions, path) to function cards in the IDE panel"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "workflow_use_ai_assistant": {
+        "id": "WF004",
+        "name": "Get Help from AI Assistant",
+        "description": "Use the chat panel to ask questions about pypore3d or get help with your workflow",
+        "entry_point": "chat_panel",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Type Question in Chat",
+            "ui_path": {
+              "panel": {
+                "id": "chat_panel",
+                "location": "bottom_of_window",
+                "children": {
+                  "assistant_panel": {
+                    "id": "send_panel",
+                    "location": "left_side",
+                    "children": {
+                      "header": {
+                        "id": "chat_header",
+                        "children": {
+                          "title_label": {
+                            "id": "send_label",
+                            "type": "QLabel",
+                            "text": "CL Assistant"
+                          },
+                          "vision_toggle": {
+                            "id": "btn_vision",
+                            "type": "QPushButton",
+                            "checkable": true,
+                            "label": "Where Can I find...?",
+                            "tooltip": "Toggle Visual UI Assistant Mode",
+                            "states": {
+                              "off": {"style": "dark_gray"},
+                              "on": {"style": "green_active"}
+                            },
+                            "instruction": "Enable this to ask the AI to help you find UI elements visually"
+                          }
+                        }
+                      },
+                      "input_area": {
+                        "id": "send_input",
+                        "type": "QTextEdit",
+                        "placeholder": "Chat with your Assistant",
+                        "is_target": true,
+                        "instruction": "Type your question about pypore3d or image processing here"
+                      },
+                      "send_button": {
+                        "id": "send_button",
+                        "type": "QPushButton",
+                        "label": "Send",
+                        "is_target": true,
+                        "instruction": "Click 'Send' to submit your question to the AI assistant"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 2,
+            "action": "View AI Response",
+            "ui_path": {
+              "panel": {
+                "id": "chat_panel",
+                "children": {
+                  "response_panel": {
+                    "id": "response_panel",
+                    "location": "right_side",
+                    "children": {
+                      "title_label": {
+                        "id": "response_label",
+                        "type": "QLabel",
+                        "text": "CL Response"
+                      },
+                      "response_display": {
+                        "id": "response_display",
+                        "type": "QTextBrowser",
+                        "supports": "markdown",
+                        "readonly": true,
+                        "is_target": true,
+                        "instruction": "The AI response will appear here with formatted text and code examples"
+                      },
+                      "clear_button": {
+                        "id": "clear_button",
+                        "type": "QPushButton",
+                        "label": "Clear",
+                        "instruction": "Click to clear the response display"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "workflow_run_and_save": {
+        "id": "WF005",
+        "name": "Run Code and Save Results",
+        "description": "Execute the processing pipeline and save your work",
+        "entry_point": "toolbar",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Run All Code",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "toolbar": {
+                    "id": "toolbar_widget",
+                    "location": "top_right_corner_of_tabs",
+                    "children": {
+                      "run_button": {
+                        "id": "btn_run",
+                        "type": "QPushButton",
+                        "label": "Run All",
+                        "is_target": true,
+                        "instruction": "Click 'Run All' to execute the entire script"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 2,
+            "action": "Monitor Console Output",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "subroutine_widget": {
+                    "children": {
+                      "console": {
+                        "id": "console",
+                        "type": "ConsoleOverlayWidget",
+                        "location": "bottom_of_subroutine",
+                        "children": {
+                          "console_text": {
+                            "id": "console_text",
+                            "type": "QTextEdit",
+                            "readonly": true,
+                            "placeholder": "Subroutine Console Output...",
+                            "style": "green_on_black_terminal",
+                            "is_target": true,
+                            "instruction": "Execution output and errors appear here"
+                          },
+                          "help_button": {
+                            "id": "btn_help",
+                            "type": "QPushButton",
+                            "icon": "SP_MessageBoxQuestion",
+                            "tooltip": "Ask AI about this error",
+                            "location": "top_right_corner",
+                            "instruction": "If you see an error, click this to ask the AI for help"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 3,
+            "action": "Save Script",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "toolbar": {
+                    "children": {
+                      "save_button": {
+                        "id": "btn_save",
+                        "type": "QPushButton",
+                        "label": "Save",
+                        "is_target": true,
+                        "instruction": "Click 'Save' to save your Python script to a file"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 4,
+            "action": "Load Existing Script",
+            "ui_path": {
+              "panel": {
+                "id": "smart_ide_widget",
+                "children": {
+                  "toolbar": {
+                    "children": {
+                      "load_button": {
+                        "id": "btn_load",
+                        "type": "QPushButton",
+                        "label": "Load",
+                        "is_target": true,
+                        "instruction": "Click 'Load' to open an existing Python script"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "step": 5,
+            "action": "Access Output Files",
+            "ui_path": {
+              "panel": {
+                "id": "voxel_viewer_widget",
+                "children": {
+                  "floating_control_panel": {
+                    "children": {
+                      "output_folder_button": {
+                        "id": "btn_open_folder",
+                        "type": "QPushButton",
+                        "label": "Output Folder",
+                        "icon": "SP_DirIcon",
+                        "location": "bottom_of_control_panel",
+                        "is_target": true,
+                        "instruction": "Click to open the folder containing screenshots and exported slices"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "workflow_exit_application": {
+        "id": "WF006",
+        "name": "Exit Application",
+        "description": "Safely close the application with option to save session data",
+        "entry_point": "window_close",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Close Window",
+            "ui_path": {
+              "window": {
+                "id": "main_window",
+                "children": {
+                  "close_button": {
+                    "id": "window_close",
+                    "location": "title_bar",
+                    "is_target": true,
+                    "instruction": "Click the close button (X) in the window title bar"
+                  }
+                }
+              }
+            },
+            "next_interaction": {
+              "dialog": {
+                "id": "exit_dialog",
+                "type": "QMessageBox",
+                "title": "Exit Cube Lab",
+                "message": "Do you want to save the session data before exiting?",
+                "info": "Temporary files (RAW outputs, scripts) will be deleted if not saved.",
+                "children": {
+                  "save_button": {
+                    "id": "save_button",
+                    "type": "QPushButton",
+                    "label": "Save",
+                    "is_default": true,
+                    "instruction": "Click to save session files to a folder before exiting"
+                  },
+                  "dont_save_button": {
+                    "id": "discard_button",
+                    "type": "QPushButton",
+                    "label": "Don't Save",
+                    "instruction": "Click to exit without saving (temporary files will be deleted)"
+                  },
+                  "cancel_button": {
+                    "id": "cancel_button",
+                    "type": "QPushButton",
+                    "label": "Cancel",
+                    "instruction": "Click to cancel and return to the application"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "ui_element_index": {
+      "description": "Quick reference index of all UI elements by type",
+      "panels": [
+        {"id": "smart_ide_widget", "name": "IDE Panel", "location": "left"},
+        {"id": "voxel_viewer_widget", "name": "Voxel Viewer", "location": "right"},
+        {"id": "chat_panel", "name": "AI Assistant Panel", "location": "bottom"}
+      ],
+      "tabs": [
+        {"id": "subroutines_tab", "name": "Subroutines", "parent": "smart_ide_widget"},
+        {"id": "ide_tab", "name": "IDE", "parent": "smart_ide_widget"}
+      ],
+      "toolbar_buttons": [
+        {"id": "btn_load", "label": "Load", "action": "load_script"},
+        {"id": "btn_save", "label": "Save", "action": "save_script"},
+        {"id": "btn_run", "label": "Run All", "action": "execute_code"},
+        {"id": "btn_theme", "label": "Theme", "action": "toggle_theme"}
+      ],
+      "floating_buttons": [
+        {"id": "btn_sub_ai", "color": "purple", "location": "subroutines_tab", "action": "validation_check"},
+        {"id": "btn_code_ai", "color": "green", "location": "ide_tab", "action": "code_fix"},
+        {"id": "btn_share", "color": "blue", "location": "voxel_viewer", "action": "share_metadata"}
+      ],
+      "dialogs": [
+        {"id": "function_selection_dialog", "trigger": "+Func button", "purpose": "select_function"},
+        {"id": "unified_load_dialog", "trigger": "Open sample button", "purpose": "import_data"},
+        {"id": "ai_query_dialog", "trigger": "AI buttons", "purpose": "ai_assistance"},
+        {"id": "exit_dialog", "trigger": "close window", "purpose": "save_confirmation"}
+      ]
+    },
+    "interaction_patterns": {
+      "drag_and_drop": {
+        "description": "Supported drag and drop operations",
+        "operations": [
+          {
+            "source": "DraggableOutput (function output pill)",
+            "target": "DropInput (function input field)",
+            "action": "Chain function outputs to inputs"
+          },
+          {
+            "source": "DraggableOutput",
+            "target": "VoxelViewerWidget",
+            "action": "Load result file into 3D viewer"
+          },
+          {
+            "source": "External .raw file",
+            "target": "VoxelViewerWidget",
+            "action": "Prompt for dimensions and load"
+          }
+        ]
+      },
+      "keyboard_shortcuts": {
+        "editor": {
+          "auto_complete": "Type to trigger (threshold: 1 character)",
+          "bracket_pairs": "Auto-insert closing brackets"
+        }
+      },
+      "visual_feedback": {
+        "toast_notifications": {
+          "location": "bottom_center",
+          "colors": {
+            "success": "green border",
+            "error": "red border"
+          }
+        },
+        "button_states": {
+          "save_success": "Green 'Saved!' text temporarily"
+        }
+      }
+    }
+  }
+}

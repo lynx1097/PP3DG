@@ -1,0 +1,51 @@
+# Version format
+version: 1.0.{build}
+skip_non_tags: true
+
+# Image with Python 3.12 support
+image: Visual Studio 2022
+
+# OPTIMIZATION: Disable default MSBuild & Test discovery (Saves ~1-2 mins)
+build: off
+test: off
+
+environment:
+  PYTHON: "C:\\Python312-x64"
+  GITHUB_TOKEN:
+    secure: "qO8aw5roMJJnmboTUi0EEexBhksqxBW7OIlDAizOSNfhiCjq/Ayord/jWaLoXCeT"
+
+# OPTIMIZATION: Cache pip, but clear it if requirements.txt changes
+# The arrow (->) tells AppVeyor: "If this file changes, delete the cache."
+# Adding this line NOW effectively clears your old cache for the next build.
+cache:
+  - '%LOCALAPPDATA%\pip\Cache -> requirements.txt'
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
+  - "python -m pip install --upgrade pip setuptools wheel"
+
+  # OPTIMIZATION: Inno Setup 6 is usually pre-installed on VS2022 image.
+  # Commented out to save time. Uncomment if you get a "Path not found" error.
+  # - choco install innosetup -y --no-progress
+
+  # Install deps
+  - "pip install --no-warn-script-location -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/"
+
+build_script:
+  - "pyinstaller --clean --noconfirm --log-level WARN --workpath build --distpath dist build.spec"
+  - '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss'
+
+artifacts:
+  - path: installers\*.exe
+    name: WindowsInstaller
+
+deploy:
+  - provider: GitHub
+    auth_token: $(GITHUB_TOKEN)
+    artifact: WindowsInstaller
+    draft: false
+    prerelease: true
+    force_update: true
+    on:
+      appveyor_repo_tag: true

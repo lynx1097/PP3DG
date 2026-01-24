@@ -35,3 +35,8 @@ Thumbs.db
 /oldbuild
 ._cubelab.spec
 imports
+QUICK_START.md
+src/._.DS_Store
+._*
+src/resources/images/._Splash.jpg
+build_windows.bat

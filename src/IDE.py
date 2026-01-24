@@ -9,7 +9,7 @@ import tempfile
 import datetime
 import ast
 from pathlib import Path
-
+from respath import get_resource_path as resource_path
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
     QPushButton, QFileDialog, QTabWidget, QMessageBox, QLabel,
@@ -87,7 +87,7 @@ class OverlayButton(QPushButton):
     def __init__(self, parent, tooltip, icon_path="ai_help.png", color="#9c27b0"):
         super().__init__(parent)
         self.setFixedSize(60, 60); self.setCursor(Qt.CursorShape.PointingHandCursor); self.setToolTip(tooltip)
-        icon_full_path = str(Path(__file__).parent.parent / 'resources' / 'images' / icon_path)
+        icon_full_path = str(resource_path(os.path.join('resources', 'images', icon_path)))
         if os.path.exists(icon_full_path): self.setIcon(QIcon(icon_full_path))
         else: self.setIcon(QApplication.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
         self.setIconSize(QSize(32, 32))

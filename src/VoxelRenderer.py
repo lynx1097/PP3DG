@@ -1,6 +1,7 @@
 import sys , os , re , traceback , datetime , json 
 import numpy as np
 import pyvista as pv
+from pyvista import core
 from vtkmodules import vtkImagingCore, vtkCommonCore
 from pathlib import Path
 from PyQt6.QtWidgets import (
@@ -13,10 +14,10 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QPropertyAnimation, QE
 from PyQt6.QtGui import QPainter, QPixmap, QColor, QImage, QMovie, QDesktopServices
 from pyvistaqt import QtInteractor
 from PIL import Image 
-
+from respath import get_resource_path as resource_path
 # --- 1. CONFIGURATION ---
 
-LOADING_GIF_PATH = str(Path(__file__).parent.parent / 'resources' / 'images' / 'loading.gif')
+LOADING_GIF_PATH = str(resource_path(os.path.join('resources', 'images', 'loading.gif')))
 
 # CONSTANT STYLES
 BTN_STYLE_DEFAULT = "background-color: #3d3d3d; border: 1px solid #555; padding: 5px; border-radius: 4px; color: #fff;"
@@ -28,8 +29,6 @@ def configure_rendering_device():
         del os.environ["LIBGL_ALWAYS_SOFTWARE"]
     os.environ["MESA_GL_VERSION_OVERRIDE"] = "4.5"
     os.environ["MESA_GLSL_VERSION_OVERRIDE"] = "450"
-    pv.global_theme.volume_mapper = 'smart'
-    pv.global_theme.allow_empty_mesh = True
 
 STYLESHEET = f"""
 QWidget {{ font-size: 9pt; color: #f0f0f0; font-family: Segoe UI, Arial; }}
@@ -347,7 +346,7 @@ class VoxelViewerWidget(QWidget):
         """
         try:
             # 1. Base Documents/Cube-Lab
-            base = Path(os.path.expanduser("~/Documents")) / "Cube-Lab"
+            base = resource_path(os.path.expanduser("~/Documents")) / "Cube-Lab"
             
             # 2. Date Subfolder
             date_str = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -362,7 +361,7 @@ class VoxelViewerWidget(QWidget):
 
     def open_output_folder(self):
         """Opens the current date folder in file explorer."""
-        base = Path(os.path.expanduser("~/Documents")) / "Cube-Lab"
+        base = resource_path(os.path.expanduser("~/Documents")) / "Cube-Lab"
         # Try specific date folder, else base
         date_str = datetime.datetime.now().strftime("%Y-%m-%d")
         
@@ -468,7 +467,7 @@ class VoxelViewerWidget(QWidget):
             img = Image.fromarray(img_norm)
             
             # --- STRUCTURED SAVE ---
-            raw_name = Path(self.current_meta.get('filename', 'Unknown')).stem
+            raw_name = resource_path(self.current_meta.get('filename', 'Unknown')).stem
             time_str = datetime.datetime.now().strftime("%H-%M")
             fn_template = f"{time_str}-{raw_name}-slide-{self.slice_axis}-{self.slice_index}.png"
             
@@ -602,7 +601,7 @@ class VoxelViewerWidget(QWidget):
     def take_screenshot(self):
         try:
             # --- STRUCTURED SAVE ---
-            raw_name = Path(self.current_meta.get('filename', 'Unknown')).stem
+            raw_name = resource_path(self.current_meta.get('filename', 'Unknown')).stem
             time_str = datetime.datetime.now().strftime("%H-%M")
             fn_template = f"{time_str}-{raw_name}-snap.png"
             

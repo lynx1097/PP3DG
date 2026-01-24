@@ -72,21 +72,10 @@ from PyQt6.QtGui import QFont, QPixmap, QIcon, QMovie
 from PyQt6.QtCore import Qt, QTimer, QSize
 from pathlib import Path
 import tempfile
-
-
-def get_resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller."""
-    if getattr(sys, 'frozen', False):
-        # Running in PyInstaller bundle
-        base_path = sys._MEIPASS
-    else:
-        # Running in normal Python environment
-        base_path = Path(__file__).parent.parent
-    return os.path.join(base_path, relative_path)
-
+from respath import get_resource_path as resource_path
 
 # Define path to visual context
-CONTEXT_FILE = Path(get_resource_path('visual_context.json'))
+CONTEXT_FILE = resource_path('visual_context.json')
 
 
 class MainWindow(QMainWindow):
@@ -185,7 +174,7 @@ class MainWindow(QMainWindow):
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.hide()
         
-        loading_gif = get_resource_path(os.path.join('resources', 'images', 'loading.gif'))
+        loading_gif = resource_path(os.path.join('resources', 'images', 'loading.gif'))
         self.movie = QMovie(loading_gif)
         self.movie.setScaledSize(QSize(40, 30)) 
         self.loading_label.setMovie(self.movie)
@@ -268,7 +257,7 @@ class MainWindow(QMainWindow):
     
     def load_visual_context(self):
         try:
-            if CONTEXT_FILE.exists():
+            if os.path.exists(CONTEXT_FILE):
                 with open(CONTEXT_FILE, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
@@ -386,14 +375,14 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     
-    splash_path = get_resource_path(os.path.join('resources', 'images', 'Splash.jpg'))
+    splash_path = resource_path(os.path.join('resources', 'images', 'Splash.jpg'))
     splash_pix = QPixmap(splash_path)
     splash = QSplashScreen(splash_pix)
     splash.show()
     
     app.processEvents()
     
-    icon_path = get_resource_path(os.path.join('resources', 'images', 'Icon.ico'))
+    icon_path = resource_path(os.path.join('resources', 'images', 'Icon.ico'))
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))        
     
