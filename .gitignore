@@ -6,7 +6,6 @@ __pycache__/
 *.egg-info/
 venv/
 .venv/
-
 # Build
 dist/
 build/
@@ -30,13 +29,16 @@ AppDir*/
 .DS_Store
 Thumbs.db
 
+.env
+.env*
+old*
+*old
+._*
+
 # Keep these
 !installers/*.iss
 /oldbuild
 ._cubelab.spec
 imports
 QUICK_START.md
-src/._.DS_Store
-._*
-src/resources/images/._Splash.jpg
 build_windows.bat
