@@ -1,5 +1,5 @@
 # Version format
-version: 1.0.{build}
+version: 0.1.{build}
 skip_non_tags: true
 
 # Image with Python 3.12 support
