@@ -1,7 +1,11 @@
 # Version format
 version: 0.1.{build}
 skip_non_tags: true
-
+init:
+  - ps: |
+      if ($env:APPVEYOR_REPO_TAG -eq "true") {
+        Update-AppveyorBuild -Version $env:APPVEYOR_REPO_TAG_NAME
+      }
 # Image with Python 3.12 support
 image: Visual Studio 2022
 

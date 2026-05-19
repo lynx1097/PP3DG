@@ -8,7 +8,7 @@
 #define MyAppExeName "PP3DG.exe"
 
 [Setup]
-AppId={8F4E9A7B-3C2D-4E5F-9A1B-2C3D4E5F6A7B}
+AppId={{8F4E9A7B-3C2D-4E5F-9A1B-2C3D4E5F6A7B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
