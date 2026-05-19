@@ -27,7 +27,7 @@ install:
 
   # OPTIMIZATION: Inno Setup 6 is usually pre-installed on VS2022 image.
   # Commented out to save time. Uncomment if you get a "Path not found" error.
-  # - choco install innosetup -y --no-progress
+  - choco install innosetup --version=6.3.3 -y --no-progress
 
   # Install deps
   - "pip install --no-warn-script-location -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/"

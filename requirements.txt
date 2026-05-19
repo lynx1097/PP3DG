@@ -16,14 +16,14 @@ PyQt6-QScintilla==2.14.1
 pyvista==0.42.3
 pyvistaqt==0.11.0
 vtk==9.3.1
-matplotlib==3.7.0
+matplotlib>=3.8.0
 
 # Data Processing
 numpy==1.26.4
 Pillow==10.2.0
 
 # AI Integration
-google-genai
+google-genai==1.46.0
 pydantic==2.5.3
 
 # Configuration & System
@@ -31,3 +31,4 @@ psutil==5.9.8
 cryptography
 # Telemetry
 newrelic-telemetry-sdk==0.5.1
+setuptools>=42.0.0,<82

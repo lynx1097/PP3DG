@@ -12,7 +12,10 @@ SRC_DIR = BASE_DIR / "src"
 
 all_datas = []
 all_binaries = []
-all_hiddenimports = []
+all_hiddenimports = [
+    h for h in all_hiddenimports 
+    if not h.startswith('vtkmodules.web')
+]
 
 def safe_collect(package_name):
     """Run collect_all on a package to get absolutely everything."""
@@ -77,7 +80,7 @@ strict_imports = [
     'PIL', 'PIL.Image',
     'google.genai',
     'pydantic', 'pydantic_core',
-    'psutil', 'cryptography', 'tempfile', 'json', 'pathlib'
+    'psutil', 'cryptography', 'tempfile', 'json', 'pathlib',
     'newrelic_telemetry_sdk',
     
     # pypore3d
@@ -90,11 +93,7 @@ strict_imports = [
     'vtkmodules.util.numpy_support',
     'vtkmodules.qt.QVTKRenderWindowInteractor',
 
-    'pkg_resources._vendor.packaging',
-    'pkg_resources._vendor.jaraco.text',
-    'pkg_resources._vendor.jaraco.classes',
-    'pkg_resources._vendor.jaraco.functools',
-    'pkg_resources._vendor.jaraco.context',
+    'pkg_resources',
 
 
 ]
@@ -120,7 +119,6 @@ my_binaries = all_binaries
 build_args = dict(
     pathex=[str(SRC_DIR)],
     binaries=[# Use the system compatibility DLLs if SDK is missing
-        ('C:\\Windows\\System32\\downlevel\\api-ms-win-crt-*.dll', '.'),
         ('C:\\Windows\\System32\\ucrtbase.dll', '.'),
     ]+ all_binaries,
     datas=datas,
@@ -169,7 +167,7 @@ build_args = dict(
 a1 = Analysis(['src/GUI.py'], **build_args)
 
 # --- Analysis 2: User Testing ---
-a2 = Analysis(['src/User-Testing.py'], **build_args)
+#a2 = Analysis(['src/User-Testing.py'], **build_args)
 
 # --- Deduplicate Binaries (Crucial to prevent crashes) ---
 def dedup(bin_list):
@@ -180,11 +178,11 @@ def dedup(bin_list):
     return unique
 
 a1.binaries = dedup(a1.binaries)
-a2.binaries = dedup(a2.binaries)
+#a2.binaries = dedup(a2.binaries)
 
 # --- PYZ ---
 pyz1 = PYZ(a1.pure, a1.zipped_data)
-pyz2 = PYZ(a2.pure, a2.zipped_data)
+#pyz2 = PYZ(a2.pure, a2.zipped_data)
 
 # --- EXEs ---
 icon_path = SRC_DIR / 'resources' / 'images' / 'Icon.ico'
