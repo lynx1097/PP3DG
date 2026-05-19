@@ -1,5 +1,5 @@
 from cryptography.fernet import Fernet
-import json
+import json , os
 
 secrets = {
     "GEMINI_API_KEY":os.getenv("GEMINI_API_KEY"),
