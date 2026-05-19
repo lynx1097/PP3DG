@@ -65,7 +65,6 @@ import json
 import IDE as code
 import VoxelRenderer as vis
 from Client import GeminiWorker as gworker
-import DiagnosticModule as diag  
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QTextEdit, QPushButton, QLabel, QTextBrowser, QSplashScreen, QMessageBox
 from PyQt6.QtGui import QFont, QPixmap, QIcon, QMovie
@@ -73,7 +72,6 @@ from PyQt6.QtCore import Qt, QTimer, QSize
 from pathlib import Path
 import tempfile
 from respath import get_resource_path as resource_path
-
 # Define path to visual context
 CONTEXT_FILE = resource_path('visual_context.json')
 
@@ -81,12 +79,23 @@ CONTEXT_FILE = resource_path('visual_context.json')
 class MainWindow(QMainWindow):
     
     def __init__(self):
+        offline=False
         super().__init__()
         self.setWindowTitle("PyPore3D GUI")
         self.setWindowState(Qt.WindowState.WindowMaximized)
-        
+        try :
+            base = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else Path(__file__).parent.parent
+            (base / "_key.bin").read_bytes()
+            (base / "_secrets.bin").read_bytes()
+        except Exception as e:
+            offline_msg = QMessageBox()
+            offline_msg.setWindowTitle("Connection Error")
+            offline_msg.setText("Failed to load API keys. The application will run in offline mode with limited functionality : No AI chat / Diagnostics")
+            offline_msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+            offline_msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+            offline_msg.exec()
+            offline=True
         self.visual_context_data = self.load_visual_context()
-        self.run_startup_diagnostics()
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -251,9 +260,16 @@ class MainWindow(QMainWindow):
         chat_layout.addWidget(send_panel)
         chat_layout.addWidget(self.loading_label)
         chat_layout.addWidget(self.response_panel)
-        
-        main_layout.addLayout(top_layout, 7)
-        main_layout.addWidget(chat_panel, 3)
+        if offline:
+            main_layout.addLayout(top_layout)
+        else:
+            main_layout.addLayout(top_layout, 14)
+            main_layout.addWidget(chat_panel, 8)
+            import DiagnosticModule as diag
+            diag.register_crash_handler()
+  
+            self.run_startup_diagnostics()
+
     
     def load_visual_context(self):
         try:
@@ -371,26 +387,24 @@ class MainWindow(QMainWindow):
     
 
 if __name__ == '__main__':
-    diag.register_crash_handler()
 
     app = QApplication(sys.argv)
     
     splash_path = resource_path(os.path.join('resources', 'images', 'Splash.jpg'))
     splash_pix = QPixmap(splash_path)
     splash = QSplashScreen(splash_pix)
-    #splash.show()
+    splash.show()
     
     app.processEvents()
     
     icon_path = resource_path(os.path.join('resources', 'images', 'Icon.ico'))
-    #if os.path.exists(icon_path):
-        #app.setWindowIcon(QIcon(icon_path))        
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))        
     
     font = QFont("Segoe UI", 10)
     app.setFont(font)
     
     viewer = MainWindow()
-    viewer.show()
-    #QTimer.singleShot(2000, lambda: (splash.finish(viewer), ))
+    QTimer.singleShot(2000, lambda: (splash.finish(viewer),viewer.show() ))
     
     sys.exit(app.exec())
