@@ -12,10 +12,7 @@ SRC_DIR = BASE_DIR / "src"
 
 all_datas = []
 all_binaries = []
-all_hiddenimports = [
-    h for h in all_hiddenimports 
-    if not h.startswith('vtkmodules.web')
-]
+all_hiddenimports = []
 
 def safe_collect(package_name):
     """Run collect_all on a package to get absolutely everything."""
@@ -40,7 +37,10 @@ for pkg in packages:
     d, b, h = safe_collect(pkg)
     all_datas += d
     all_binaries += b
-    all_hiddenimports += h
+    all_hiddenimports = [
+        h for h in all_hiddenimports 
+        if not h.startswith('vtkmodules.web')
+    ]
 try:
     from PyInstaller.utils.hooks import get_package_paths
     _, qt_path = get_package_paths('PyQt6')
