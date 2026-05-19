@@ -156,7 +156,7 @@ class FloatingControlPanel(QDialog):
         gb_mode = QGroupBox("Rendering Mode"); l_mode = QVBoxLayout()
         self.combo_mode = QComboBox()
         self.combo_mode.setToolTip("Switch Visualization Method")
-        self.combo_mode.addItems(["Vol-XRay", "Vol-CT", "Faces-Low", "Faces-High"])
+        self.combo_mode.addItems(["Vol-Transparent", "Vol-Solid", "IsoSurface-Low", "IsoSurface-High"])
         self.combo_mode.currentIndexChanged.connect(self.viewer.change_mode)
         l_mode.addWidget(self.combo_mode); gb_mode.setLayout(l_mode); self.panel_layout.addWidget(gb_mode)
 
@@ -298,11 +298,12 @@ class VoxelViewerWidget(QWidget):
         self.btn_share.clicked.connect(self.share_metadata)
 
     def create_slice_sliders(self):
-        self.frame_x = QFrame(self); self.frame_x.setStyleSheet("background: transparent;"); l_x = QHBoxLayout(self.frame_x)
+        self.frame_x = QFrame(self); self.frame_x.setStyleSheet("background: black;"); l_x = QHBoxLayout(self.frame_x)
         self.sl_x = QSlider(Qt.Orientation.Horizontal); self.sl_x.valueChanged.connect(lambda v: self.update_slice('x', v)); l_x.addWidget(QLabel("X:")); l_x.addWidget(self.sl_x); self.frame_x.hide()
-        self.frame_y = QFrame(self); self.frame_y.setStyleSheet("background: transparent;"); l_y = QVBoxLayout(self.frame_y)
-        self.sl_y = QSlider(Qt.Orientation.Vertical); self.sl_y.setInvertedAppearance(True); self.sl_y.valueChanged.connect(lambda v: self.update_slice('y', v)); l_y.addWidget(QLabel("Y:")); l_y.addWidget(self.sl_y); self.frame_y.hide()
-        self.frame_z = QFrame(self); self.frame_z.setStyleSheet("background: transparent;"); l_z = QHBoxLayout(self.frame_z)
+        self.frame_y = QFrame(self); self.frame_y.setStyleSheet("background: black;"); l_y = QVBoxLayout(self.frame_y)
+        self.sl_y = QSlider(Qt.Orientation.Vertical); """ self.sl_y.setInvertedAppearance(True); """ 
+        self.sl_y.valueChanged.connect(lambda v: self.update_slice('y', v)); l_y.addWidget(QLabel("Y:")); l_y.addWidget(self.sl_y); self.frame_y.hide()
+        self.frame_z = QFrame(self); self.frame_z.setStyleSheet("background: black;"); l_z = QHBoxLayout(self.frame_z)
         self.sl_z = QSlider(Qt.Orientation.Horizontal); self.sl_z.valueChanged.connect(lambda v: self.update_slice('z', v)); l_z.addWidget(QLabel("Z:")); l_z.addWidget(self.sl_z); self.frame_z.hide()
 
     def resizeEvent(self, event):
@@ -346,7 +347,7 @@ class VoxelViewerWidget(QWidget):
         """
         try:
             # 1. Base Documents/Cube-Lab
-            base = resource_path(os.path.expanduser("~/Documents")) / "Cube-Lab"
+            base = Path(os.path.expanduser("~/Documents")) / "PyPore3D-GUI"
             
             # 2. Date Subfolder
             date_str = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -361,7 +362,7 @@ class VoxelViewerWidget(QWidget):
 
     def open_output_folder(self):
         """Opens the current date folder in file explorer."""
-        base = resource_path(os.path.expanduser("~/Documents")) / "Cube-Lab"
+        base = Path(os.path.expanduser("~/Documents")) / "PyPore3D-GUI"
         # Try specific date folder, else base
         date_str = datetime.datetime.now().strftime("%Y-%m-%d")
         
@@ -467,7 +468,7 @@ class VoxelViewerWidget(QWidget):
             img = Image.fromarray(img_norm)
             
             # --- STRUCTURED SAVE ---
-            raw_name = resource_path(self.current_meta.get('filename', 'Unknown')).stem
+            raw_name = Path(self.current_meta.get('filename', 'Unknown')).stem
             time_str = datetime.datetime.now().strftime("%H-%M")
             fn_template = f"{time_str}-{raw_name}-slide-{self.slice_axis}-{self.slice_index}.png"
             
@@ -509,7 +510,7 @@ class VoxelViewerWidget(QWidget):
         prev = self.current_mode_index; self.current_mode_index = self.panel.combo_mode.currentIndex()
         self.panel.toggle_threshold_controls(self.current_mode_index >= 2)
         if self.current_mode_index == 3:
-            if QMessageBox.warning(self.panel, "Experimental", "High RAM usage. Continue?", QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No:
+            if QMessageBox.warning(self.panel, "Warning", "This Mode is experimental , consumes TONS of RAM and might crash . Continue?", QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No:
                 self.panel.combo_mode.blockSignals(True); self.panel.combo_mode.setCurrentIndex(prev); self.panel.combo_mode.blockSignals(False); self.current_mode_index = prev; self.panel.toggle_threshold_controls(self.current_mode_index >= 2); return
         self.update_view(reset=False)
 
@@ -601,7 +602,7 @@ class VoxelViewerWidget(QWidget):
     def take_screenshot(self):
         try:
             # --- STRUCTURED SAVE ---
-            raw_name = resource_path(self.current_meta.get('filename', 'Unknown')).stem
+            raw_name = Path(self.current_meta.get('filename', 'Unknown')).stem
             time_str = datetime.datetime.now().strftime("%H-%M")
             fn_template = f"{time_str}-{raw_name}-snap.png"
             

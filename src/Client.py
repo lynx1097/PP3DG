@@ -1,10 +1,11 @@
-import os
+from email.mime import base
+import sys
 import json
-import typing
 from pathlib import Path
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
-from respath import get_resource_path as resource_path
+from cryptography.fernet import Fernet
+import json
+
 try:
     from google import genai
     from google.genai import types
@@ -13,7 +14,6 @@ except ImportError:
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-load_dotenv(resource_path(".env"))
 
 # --- DATA MODELS ---
 
@@ -35,7 +35,12 @@ class CodeFix(BaseModel):
 # --- KEY MANAGER ---
 class KeyManager:
     def __init__(self):
-        self.keys = [k for k in [os.getenv("GEMINI_API_KEY"), os.getenv("GEMINI_API_KEY_2"), os.getenv("GEMINI_API_KEY_3")] if k]
+        base = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else Path(__file__).parent.parent
+        key = (base / "_key.bin").read_bytes()
+        encrypted = (base / "_secrets.bin").read_bytes()
+
+        secrets = json.loads(Fernet(key).decrypt(encrypted))
+        self.keys = [k for k in [secrets["GEMINI_API_KEY"], secrets["GEMINI_API_KEY_2"], secrets["GEMINI_API_KEY_3"]] if k]
         self.current_index = 0
 
     def get_current_key(self):
@@ -53,8 +58,8 @@ class KeyManager:
 class GeminiClient:
     # Model Hierarchy for Fallback
     MODELS = {
-        "smartest": "gemini-flash-latest",
-        "moderate": "gemini-3-flash-preview",
+        "smartest": "gemma-4-31b-it",
+        "moderate": "gemma-4-26b-a4b-it",
         "backup": "gemma-3-27b-it"     # Fallback for everything
     }
 
@@ -69,8 +74,8 @@ class GeminiClient:
     def _load_system_context(self):
         """Loads persistent system instructions from context.txt"""
         try:
-            ctx_path = resource_path("context.txt")
-            if os.path.exists(ctx_path):
+            ctx_path = Path(__file__).parent / "context.txt"
+            if ctx_path.exists():
                 with open(ctx_path, "r", encoding="utf-8") as f:
                     return f.read().strip()
         except Exception as e:
@@ -156,14 +161,11 @@ class GeminiWorker(QThread):
         self.use_case = use_case
         self.image_path = image_path
         self.ref_card = ref_card
-        # DON'T create client here - wrong thread
+        self.client = GeminiClient()
 
     def run(self):
         try:
-            # Create client HERE - on the worker thread
-            client = GeminiClient()
-            
-            result = client.generate_response(
+            result = self.client.generate_response(
                 self.prompt, use_case=self.use_case, image_path=self.image_path, ref_card=self.ref_card
             )
             
@@ -177,11 +179,4 @@ class GeminiWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
         finally:
-            self.finished_signal.emit()    
-    response_received = pyqtSignal(str)
-    vision_received = pyqtSignal(object) 
-    code_fix_received = pyqtSignal(object) 
-    error_occurred = pyqtSignal(str)
-    finished_signal = pyqtSignal()
-
-    
+            self.finished_signal.emit()

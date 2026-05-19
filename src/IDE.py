@@ -45,7 +45,7 @@ IMPORTANT:
 class SessionManager:
     def __init__(self):
         self.session_id = str(uuid.uuid4())[:8]
-        self.session_dir = os.path.join(tempfile.gettempdir(), f"CubeLab_Session_{self.session_id}")
+        self.session_dir = os.path.join(tempfile.gettempdir(), f"PP3DG_Session_{self.session_id}")
         if not os.path.exists(self.session_dir): os.makedirs(self.session_dir)
     def get_path(self, filename): return os.path.join(self.session_dir, filename)
     def save_session_to(self, dest_dir):
@@ -213,7 +213,7 @@ class AIUndoRedoHUD(QWidget):
     def show_undo(self): self.is_undo_state = True; self.btn.setText("  â†© Undo AI Fix  "); self.show_animated()
     def toggle_state(self):
         if self.is_undo_state: self.undo_requested.emit(); self.btn.setText("  â†ª Redo AI Fix  "); self.btn.setStyleSheet(f"QPushButton {{ background-color: #444; color: #aaa; border-radius: 18px; padding: 8px 20px; font-weight: bold; border: 2px solid #666; }}")
-        else: self.redo_requested.emit(); self.btn.setText("  â†© Undo AI Fix  "); self.btn.setStyleSheet(f"QPushButton {{ background-color: {Theme.DARK['accent']}; color: white; border-radius: 18px; padding: 8px 20px; font-weight: bold; border: 2px solid white; }}")
+        else: self.redo_requested.emit(); self.btn.setText("Undo AI Fix  "); self.btn.setStyleSheet(f"QPushButton {{ background-color: {Theme.DARK['accent']}; color: white; border-radius: 18px; padding: 8px 20px; font-weight: bold; border: 2px solid white; }}")
         self.is_undo_state = not self.is_undo_state
     def show_animated(self):
         if not self.isVisible(): self.show(); parent_geo = self.parent().geometry(); x = (parent_geo.width() - self.width()) // 2; self.move(x, 20); self.raise_()
@@ -272,21 +272,93 @@ class FloatingRevertButton(QWidget):
         if not self.isVisible(): self.show(); parent_geo = self.parent().geometry(); x = (parent_geo.width() - self.width()) // 2; self.move(x, 20)
 
 class PythonRunner(QThread):
-    output_signal = pyqtSignal(str); error_signal = pyqtSignal(str)
-    def __init__(self, code, script_path=None): super().__init__(); self.code = code; self.script_path = script_path
+    output_signal = pyqtSignal(str)
+    error_signal = pyqtSignal(str)
+    
+    def __init__(self, code, script_path=None, timeout=60):
+        super().__init__()
+        self.code = code
+        self.script_path = script_path
+        self.timeout = timeout
+        self._stop_flag = False
+    
+    def stop(self):
+        self._stop_flag = True
+    
     def run(self):
+        import io
+        import sys
+        import traceback
+        
+        if self.script_path:
+            try:
+                with open(self.script_path, 'r', encoding='utf-8') as f:
+                    self.code = f.read()
+            except Exception as e:
+                self.error_signal.emit(f"Failed to read script: {e}")
+                return
+        
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        
+        captured_out = io.StringIO()
+        captured_err = io.StringIO()
+        
+        runner = self
+        
+        class SignalWriter:
+            def __init__(self, signal, buffer):
+                self.signal = signal
+                self.buffer = buffer
+                self.line_buffer = ""
+            
+            def write(self, text):
+                if runner._stop_flag:
+                    raise KeyboardInterrupt("Execution stopped by user")
+                self.buffer.write(text)
+                self.line_buffer += text
+                while '\n' in self.line_buffer:
+                    line, self.line_buffer = self.line_buffer.split('\n', 1)
+                    self.signal.emit(line + '\n')
+            
+            def flush(self):
+                if self.line_buffer:
+                    self.signal.emit(self.line_buffer)
+                    self.line_buffer = ""
+        
+        sys.stdout = SignalWriter(self.output_signal, captured_out)
+        sys.stderr = SignalWriter(self.error_signal, captured_err)
+        
         try:
-            args = [sys.executable, "-u"]
-            if self.script_path: args.append(self.script_path)
-            else: args.extend(["-c", self.code])
-            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            while True:
-                output = process.stdout.readline(); 
-                if output == '' and process.poll() is not None: break
-                if output: self.output_signal.emit(output)
-            _, stderr = process.communicate()
-            if stderr: self.error_signal.emit(stderr)
-        except Exception as e: self.error_signal.emit(str(e))
+            # Pre-import common modules for user convenience
+            exec_globals = {
+                '__name__': '__main__',
+                '__builtins__': __builtins__,
+            }
+            
+            # Optional: Pre-import useful modules
+            try:
+                import numpy as np
+                import pypore3d
+                exec_globals['np'] = np
+                exec_globals['numpy'] = np
+                exec_globals['pypore3d'] = pypore3d
+            except ImportError:
+                pass
+            
+            exec(self.code, exec_globals)
+            
+            sys.stdout.flush()
+            sys.stderr.flush()
+            
+        except KeyboardInterrupt:
+            self.error_signal.emit("Execution stopped by user.")
+        except Exception:
+            tb = traceback.format_exc()
+            self.error_signal.emit(tb)
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
 class AdvancedEditor(QsciScintilla):
     error_found = pyqtSignal(int, str); errors_cleared = pyqtSignal()
@@ -700,7 +772,7 @@ class SmartIDEWidget(QWidget):
         self.btn_add_sub = QPushButton("  + Add New Subroutine  "); self.btn_add_sub.setFixedHeight(40); self.btn_add_sub.setStyleSheet(f"QPushButton {{ background-color: {Theme.DARK['accent']}; color: white; border-radius: 6px; font-size: 14px; font-weight: bold; }} QPushButton:hover {{ background-color: {Theme.DARK['accent_hover']}; }}"); self.btn_add_sub.clicked.connect(self.add_subroutine)
         v_layout.addWidget(self.btn_add_sub); v_layout.addWidget(self.scroll)
         
-        self.btn_sub_ai = OverlayButton(self.visual_tab, "Check Validation (AI)", color="#9c27b0"); self.btn_sub_ai.clicked.connect(self.handle_subroutine_validation)
+        #self.btn_sub_ai = OverlayButton(self.visual_tab, "Check Validation (AI)", color="#9c27b0"); self.btn_sub_ai.clicked.connect(self.handle_subroutine_validation)
 
         self.editor_container = QWidget(); layout_e = QVBoxLayout(self.editor_container); layout_e.setContentsMargins(0,0,0,0); layout_e.setSpacing(0)
         self.editor = AdvancedEditor(); self.editor.textChanged.connect(self.on_code_typed); self.float_revert = FloatingRevertButton(self.editor); self.float_revert.clicked.connect(self.revert_code)
@@ -708,7 +780,7 @@ class SmartIDEWidget(QWidget):
         self.lbl_stats = QLabel("Ln 1, Col 1"); self.lbl_err = QLabel("No Errors"); self.status_layout.addWidget(self.lbl_stats); self.status_layout.addStretch(); self.status_layout.addWidget(self.lbl_err)
         layout_e.addWidget(self.editor); layout_e.addWidget(self.status_bar)
         
-        self.btn_code_ai = OverlayButton(self.editor_container, "Fix Syntax (AI)", color="#388e3c"); self.btn_code_ai.clicked.connect(self.handle_code_fix)
+        #self.btn_code_ai = OverlayButton(self.editor_container, "Fix Syntax (AI)", color="#388e3c"); self.btn_code_ai.clicked.connect(self.handle_code_fix)
         self.ai_undo_hud = AIUndoRedoHUD(self.editor_container)
         self.ai_undo_hud.undo_requested.connect(self.undo_ai_fix)
         self.ai_undo_hud.redo_requested.connect(self.redo_ai_fix)
@@ -717,7 +789,7 @@ class SmartIDEWidget(QWidget):
         self.btn_load.clicked.connect(self.load_file); self.btn_save.clicked.connect(self.save_file); self.btn_run.clicked.connect(self.run_code); self.btn_theme.clicked.connect(self.toggle_theme)
         self.editor.cursorPositionChanged.connect(self.update_stats); self.editor.error_found.connect(lambda n, s: self.lbl_err.setText(f"âš  {n} Error(s)")); self.editor.errors_cleared.connect(lambda: self.lbl_err.setText("âœ” No Errors"))
 
-    def resizeEvent(self, event): super().resizeEvent(event); self.btn_sub_ai.update_position(); self.btn_code_ai.update_position()
+    def resizeEvent(self, event): super().resizeEvent(event); #self.btn_sub_ai.update_position(); self.btn_code_ai.update_position()
 
     def get_relevant_context(self, code_text):
         if not global_library: return ""
@@ -928,7 +1000,29 @@ class SmartIDEWidget(QWidget):
     def hide_sync_error(self): self.visual_tab.setEnabled(True); self.lbl_err.setText(""); self.float_revert.hide()
     def revert_code(self): self.is_syncing = True; self.editor.setText(self.last_valid_code); self.hide_sync_error(); self.is_syncing = False; self.toast.show_message("Code reverted to last valid state.")
     def update_stats(self, line, index): line, col = self.editor.getCursorPosition(); self.lbl_stats.setText(f"Ln {line+1}, Col {col+1} | Python")
-    def run_code(self): self.btn_run.setEnabled(False); self.runner = PythonRunner(self.editor.text()); self.runner.output_signal.connect(lambda s: self.toast.show_message("Execution Started")); self.runner.error_signal.connect(lambda s: self.toast.show_message(f"Error: {s}", True)); self.runner.finished.connect(lambda: self.btn_run.setEnabled(True)); self.runner.start()
+    def run_code(self):
+        self.btn_run.setEnabled(False)
+        self.btn_run.setText("Stop")
+        self.btn_run.clicked.disconnect()
+        self.btn_run.clicked.connect(self.stop_code)
+        self.btn_run.setEnabled(True)
+        
+        self.runner = PythonRunner(self.editor.text())
+#        self.runner.output_signal.connect(lambda s: self.console.append(s))
+        self.runner.error_signal.connect(lambda s: self.toast.show_message(f"Error: {s[:50]}...", True))
+        self.runner.finished.connect(self.on_run_finished)
+        self.runner.start()
+
+    def stop_code(self):
+        if self.runner:
+            self.runner.stop()
+
+    def on_run_finished(self):
+        self.btn_run.setText("Run")
+        self.btn_run.clicked.disconnect()
+        self.btn_run.clicked.connect(self.run_code)
+        self.btn_run.setEnabled(True)
+
     def load_file(self):
         fname, _ = QFileDialog.getOpenFileName(self, "Open", "", "Code (*.py *.txt)")
         if fname:

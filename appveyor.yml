@@ -12,7 +12,7 @@ test: off
 environment:
   PYTHON: "C:\\Python312-x64"
   GITHUB_TOKEN:
-    secure: "qO8aw5roMJJnmboTUi0EEexBhksqxBW7OIlDAizOSNfhiCjq/Ayord/jWaLoXCeT"
+    secure: "rnZoaKEmqLGJMMz8+cBkeypKvCSCgQ5HPJ+e6CY3W2f4WgrAUzLXx4QPQcJLeO01"
 
 # OPTIMIZATION: Cache pip, but clear it if requirements.txt changes
 # The arrow (->) tells AppVeyor: "If this file changes, delete the cache."
@@ -33,8 +33,9 @@ install:
   - "pip install --no-warn-script-location -r requirements.txt pypore3d --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/"
 
 build_script:
+  - "python src/encrypt_env.py"
   - "pyinstaller --clean --noconfirm --log-level WARN --workpath build --distpath dist build.spec"
-  - '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\cubelab-usertesting-setup.iss'
+  - '"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers\pp3dg-setup.iss'
 
 artifacts:
   - path: installers\*.exe

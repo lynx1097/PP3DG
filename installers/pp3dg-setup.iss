@@ -1,29 +1,28 @@
 ; =====================================================
-; CubeLab-UserTesting - Inno Setup Script (FIXED)
+; PP3DG - Inno Setup Script (FIXED)
 ; =====================================================
 
-#define MyAppName "Cube Lab - User Testing"
-#define MyAppVersion "0.1"
+#define MyAppName "PP3DG"
+#define MyAppVersion "0.1-Beta"
 #define MyAppPublisher "Abdelrahman Fadel"
-#define MyAppURL "https://github.com/cubelab"
-#define MyAppExeName "CubeLab-UserTesting.exe"
+#define MyAppExeName "PP3DG.exe"
 
 [Setup]
-AppId={{9F5E0B8C-4D3E-5F6G-0B2C-3D4E5F6G7B8C}
+AppId={8F4E9A7B-3C2D-4E5F-9A1B-2C3D4E5F6A7B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL={#MyAppURL}
-DefaultDirName={autopf}\CubeLab-UserTesting
+DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 
 ; Output - current directory
 OutputDir=.
-OutputBaseFilename=CubeLab-UserTesting-{#MyAppVersion}-Windows-Setup
+OutputBaseFilename=PP3DG-{#MyAppVersion}-Windows-Setup
 
 ; NO ICON LINES - prevents errors when icon doesn't exist
+; SetupIconFile and WizardImageFile removed
 
 ; Compression
 Compression=lzma2/ultra64
@@ -37,8 +36,8 @@ PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 
 ; Architecture
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -47,7 +46,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "..\dist\CubeLab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\PP3DG\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

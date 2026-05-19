@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Cube Lab")
+        self.setWindowTitle("PyPore3D GUI")
         self.setWindowState(Qt.WindowState.WindowMaximized)
         
         self.visual_context_data = self.load_visual_context()
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         
         # --- HEADER ---
         h_chat_header = QHBoxLayout()
-        self.send_label = QLabel("CL Assistant ")
+        self.send_label = QLabel("AI Assistant ")
         self.send_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         
         self.btn_vision = QPushButton("Where Can I find...?")
@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
         
         response_layout = QVBoxLayout(self.response_panel)
         
-        response_label = QLabel("CL Response")
+        response_label = QLabel("AI Response")
         response_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         response_layout.addWidget(response_label)
         
@@ -293,7 +293,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         msg = QMessageBox()
-        msg.setWindowTitle("Exit Cube Lab")
+        msg.setWindowTitle("Exit PyPore3D GUI")
         msg.setText("Do you want to save the session data before exiting?")
         msg.setInformativeText("Temporary files (RAW outputs, scripts) will be deleted if not saved.")
         msg.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
@@ -378,18 +378,19 @@ if __name__ == '__main__':
     splash_path = resource_path(os.path.join('resources', 'images', 'Splash.jpg'))
     splash_pix = QPixmap(splash_path)
     splash = QSplashScreen(splash_pix)
-    splash.show()
+    #splash.show()
     
     app.processEvents()
     
     icon_path = resource_path(os.path.join('resources', 'images', 'Icon.ico'))
-    if os.path.exists(icon_path):
-        app.setWindowIcon(QIcon(icon_path))        
+    #if os.path.exists(icon_path):
+        #app.setWindowIcon(QIcon(icon_path))        
     
     font = QFont("Segoe UI", 10)
     app.setFont(font)
     
     viewer = MainWindow()
-    QTimer.singleShot(2000, lambda: (splash.finish(viewer), viewer.show()))
+    viewer.show()
+    #QTimer.singleShot(2000, lambda: (splash.finish(viewer), ))
     
     sys.exit(app.exec())

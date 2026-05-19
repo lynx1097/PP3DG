@@ -1,5 +1,5 @@
 # ================================
-# CubeLab - Runtime Dependencies
+# PP3DG - Runtime Dependencies
 # ================================
 
 # ✅ PyQt6 (DO NOT install sub-packages manually)
@@ -27,8 +27,7 @@ google-genai
 pydantic==2.5.3
 
 # Configuration & System
-python-dotenv==1.0.1
 psutil==5.9.8
-
+cryptography
 # Telemetry
 newrelic-telemetry-sdk==0.5.1

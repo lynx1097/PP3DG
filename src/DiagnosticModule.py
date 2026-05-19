@@ -1,4 +1,3 @@
-import os
 import sys
 import platform
 import subprocess
@@ -6,8 +5,8 @@ import json
 import traceback
 import psutil
 from datetime import datetime
-from dotenv import load_dotenv
-
+from pathlib import Path
+from cryptography.fernet import Fernet
 # Try importing New Relic SDK, fail gracefully if missing
 try:
     from newrelic_telemetry_sdk import Log, LogClient
@@ -15,10 +14,14 @@ try:
 except ImportError:
     NR_SDK_AVAILABLE = False
 
-load_dotenv()
 
 # --- CONFIGURATION ---
-NR_INSERT_KEY = os.getenv("NEW_RELIC_INSERT_KEY")
+base = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else Path(__file__).parent.parent
+key = (base / "_key.bin").read_bytes()
+encrypted = (base / "_secrets.bin").read_bytes()
+
+secrets = json.loads(Fernet(key).decrypt(encrypted))
+NR_INSERT_KEY = secrets["NEW_RELIC_INSERT_KEY"]
 # Use EU host if needed, otherwise default US
 LOG_CLIENT = None
 if NR_SDK_AVAILABLE and NR_INSERT_KEY:
@@ -133,7 +136,7 @@ def send_crash_report(error_message, context="App Crash"):
     # Prepare attributes separately
     attributes = {
         "level": "ERROR",
-        "service.name": "CubeLab",
+        "service.name": "PP3DG",
         "context": context,
         "traceback": traceback.format_exc(),
         "app.os": specs.get("os"),

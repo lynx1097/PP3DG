@@ -1,16 +1,16 @@
 {
   "visual_context": {
     "metadata": {
-      "title": "Cube Lab Visual Context Reference",
+      "title": "PyPore3D GUI Visual Context Reference",
       "description": "Hierarchical UI element reference following workflow paths for AI-guided user navigation",
-      "application": "Cube Lab - Pypore3D Mirror Studio",
+      "application": "PyPore3D GUI - Pypore3D Mirror Studio",
       "version": "1.0",
       "purpose": "Provide AI assistants with structured context about UI elements and their relationships to guide users through specific workflows"
     },
     "application_structure": {
       "id": "main_window",
       "type": "QMainWindow",
-      "title": "Cube Lab",
+      "title": "PyPore3D GUI",
       "description": "Main application window containing all panels and controls",
       "layout": "vertical",
       "children": {
@@ -1082,7 +1082,7 @@
               "dialog": {
                 "id": "exit_dialog",
                 "type": "QMessageBox",
-                "title": "Exit Cube Lab",
+                "title": "Exit PyPore3D GUI",
                 "message": "Do you want to save the session data before exiting?",
                 "info": "Temporary files (RAW outputs, scripts) will be deleted if not saved.",
                 "children": {

@@ -77,7 +77,7 @@ strict_imports = [
     'PIL', 'PIL.Image',
     'google.genai',
     'pydantic', 'pydantic_core',
-    'psutil', 'dotenv', 'tempfile', 'json', 'pathlib'
+    'psutil', 'cryptography', 'tempfile', 'json', 'pathlib'
     'newrelic_telemetry_sdk',
     
     # pypore3d
@@ -105,11 +105,12 @@ strict_imports = list(set(strict_imports + all_hiddenimports))
 # 4. DATA FILES & METADATA
 
 datas = [
-    (str(SRC_DIR / '.env'), '.'),
     (str(SRC_DIR / 'context.txt'), '.'),
     (str(SRC_DIR / 'pypore3d_function_reference.json'), '.'),
     (str(SRC_DIR / 'visual_context.json'), '.'),
     (str(SRC_DIR / 'resources'), 'resources'),
+    ('_key.bin', '.'),
+    ('_secrets.bin', '.')
 ] + all_datas
 
 
@@ -189,16 +190,16 @@ pyz2 = PYZ(a2.pure, a2.zipped_data)
 icon_path = SRC_DIR / 'resources' / 'images' / 'Icon.ico'
 exe_icon = str(icon_path) if icon_path.exists() else None
 
-exe1 = EXE(pyz1, a1.scripts, [], exclude_binaries=True, name='CubeLab', 
+exe1 = EXE(pyz1, a1.scripts, [], exclude_binaries=True, name='PP3DG', 
           debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False, icon=exe_icon, disable_windowed_traceback=False, argv_emulation=False, target_arch=None, codesign_identity=None, entitlements_file=None)
 
-exe2 = EXE(pyz2, a2.scripts, [], exclude_binaries=True, name='CubeLab-UserTesting', 
-          debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False, icon=exe_icon, disable_windowed_traceback=False, argv_emulation=False, target_arch=None, codesign_identity=None, entitlements_file=None)
+#exe2 = EXE(pyz2, a2.scripts, [], exclude_binaries=True, name='PP3DG-UserTesting', 
+#          debug=False, bootloader_ignore_signals=False, strip=False, upx=False, console=False, icon=exe_icon, disable_windowed_traceback=False, argv_emulation=False, target_arch=None, codesign_identity=None, entitlements_file=None)
 
 # --- COLLECT ---
 coll = COLLECT(
     exe1, a1.binaries, a1.datas,
-    exe2, a2.binaries, a2.datas,
+#    exe2, a2.binaries, a2.datas,
     strip=False, upx=False, upx_exclude=[],
-    name='CubeLab',
+    name='PP3DG',
 )
