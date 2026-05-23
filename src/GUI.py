@@ -1,6 +1,8 @@
 import sys
 import os
 import ctypes
+
+from cryptography.fernet import Fernet
 # 1. Force load the core Windows library that handles DLLs
 try:
     ctypes.windll.kernel32.SetDefaultDllDirectories(0x00000800) # LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
@@ -85,8 +87,11 @@ class MainWindow(QMainWindow):
         self.setWindowState(Qt.WindowState.WindowMaximized)
         try :
             base = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else Path(__file__).parent.parent
-            (base / "_key.bin").read_bytes()
-            (base / "_secrets.bin").read_bytes()
+            key = (base / "_key.bin").read_bytes()
+            encrypted = (base / "_secrets.bin").read_bytes()
+            secrets = json.loads(Fernet(key).decrypt(encrypted))
+            if secrets["GEMINI_API_KEY"]==None:
+                raise Exception("No API Keys found")
         except Exception as e:
             offline_msg = QMessageBox()
             offline_msg.setWindowTitle("Connection Error")

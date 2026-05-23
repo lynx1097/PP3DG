@@ -17,7 +17,14 @@ environment:
   PYTHON: "C:\\Python312-x64"
   GITHUB_TOKEN:
     secure: "rnZoaKEmqLGJMMz8+cBkeypKvCSCgQ5HPJ+e6CY3W2f4WgrAUzLXx4QPQcJLeO01"
-
+  GEMINI_API_KEY:
+    secure: cqcmjgGM016vm/Xmrq8rPH6xHN58+fjAsY0nYZsJ2tMKBQ9+BGq8Wk5mASwLnh/t
+  GEMINI_API_KEY_2:
+    secure: bSiphxLRpQv+ubQMfZ12VLYjOqgIzbu5bg546sEMTVGJ1mTJVGy5Ep3MnVN7+Voh
+  GEMINI_API_KEY_3:
+    secure: V3M1NgNmHmQQr035vmCedhWMvWfq8opI57k4N/PhXR+Nplp4jpLmdaMekHKfAVNd
+  NEW_RELIC_INSERT_KEY:
+    secure: YGOEFnhdQrCY3+QccRFUMNp/+rwKXTXP89rHLjEp1u1lPiq8TbUa4JSsRglGtsTw
 # OPTIMIZATION: Cache pip, but clear it if requirements.txt changes
 # The arrow (->) tells AppVeyor: "If this file changes, delete the cache."
 # Adding this line NOW effectively clears your old cache for the next build.

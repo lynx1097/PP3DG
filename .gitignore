@@ -42,3 +42,5 @@ old*
 imports
 QUICK_START.md
 build_windows.bat
+_secrets.bin
+_key.bin
