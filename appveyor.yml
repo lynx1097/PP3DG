@@ -25,6 +25,9 @@ environment:
     secure: V3M1NgNmHmQQr035vmCedhWMvWfq8opI57k4N/PhXR+Nplp4jpLmdaMekHKfAVNd
   NEW_RELIC_INSERT_KEY:
     secure: YGOEFnhdQrCY3+QccRFUMNp/+rwKXTXP89rHLjEp1u1lPiq8TbUa4JSsRglGtsTw
+  TEST_KEY:
+    secure: +/iuJ8CuNyWbHenw9UWQxwYtbe25LCaRGhgAtCwpOgkt8HvMUdEWMyDlnToW7OjWnvqD9hAb3B49ynSPFiSllmzcYX4BCLblJnqrsr9mQt7GahEyurQYE/DQYC/EQWATpL0+in+vkQgoG64z6m5NO4F8eoZ+OmN7AgzmoFugk146y7SuYBeW/aVvj/cjb6rk
+
 # OPTIMIZATION: Cache pip, but clear it if requirements.txt changes
 # The arrow (->) tells AppVeyor: "If this file changes, delete the cache."
 # Adding this line NOW effectively clears your old cache for the next build.

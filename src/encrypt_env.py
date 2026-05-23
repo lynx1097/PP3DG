@@ -7,6 +7,8 @@ secrets = {
     "GEMINI_API_KEY_3":os.getenv("GEMINI_API_KEY_3"),
     "NEW_RELIC_INSERT_KEY":os.getenv("NEW_RELIC_INSERT_KEY"),
 }
+print(os.getenv("TEST_KEY"))
+print("successful")
 
 key = Fernet.generate_key()
 f = Fernet(key)
